@@ -1,0 +1,357 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model tmst_karyawan {
+  nik           String    @id @db.VarChar(20)
+  nama          String?   @db.VarChar(50)
+  tempat_lahir  String?   @db.Char(20)
+  tanggal_lahir DateTime? @db.Date
+  jenis_kelamin String?   @db.Char(1)
+  agama         String?   @db.VarChar(255)
+  nomor_ktp     String?   @db.VarChar(25)
+  ikatan_kerja  String?   @db.Char(1)
+  alamat        String?   @db.VarChar(255)
+  telepon       String?   @db.VarChar(50)
+  pp            String?   @db.VarChar(255)
+  status_aktif  String?   @db.Char(2)
+  upload_ktp    String?   @db.VarChar(255)
+  nama_ibu_kandung String? @db.VarChar(100)
+
+  riwayat_jabatan      riwayat_jabatan[]
+  riwayat_pelatihan    riwayat_pelatihan[]
+  riwayat_pendidikan   riwayat_pendidikan[]
+  riwayat_keluarga     riwayat_keluarga[]
+  riwayat_pengangkatan riwayat_pengangkatan[]
+  tmst_pajak           tmst_pajak[]
+  tmst_askes           tmst_askes[]
+}
+
+model riwayat_jabatan {
+  id             Int       @id @default(autoincrement())
+  nik            String?   @db.VarChar(100)
+  id_biro        String?   @db.VarChar(100)
+  id_jabatan     String?   @db.VarChar(100)
+  no_sk          String?   @db.VarChar(100)
+  tmt            String?   @db.VarChar(100)
+  tanggal_sk     DateTime? @db.Date
+  ikatan_kerja   String?   @db.VarChar(100)
+  tanggal_keluar DateTime? @db.Date
+  upload_sk      String?   @db.VarChar(100)
+  is_aktiv       String?   @db.Char(2)
+  status         String?   @db.Char(4)
+
+  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+}
+
+model riwayat_pelatihan {
+  id            Int       @id @default(autoincrement())
+  nik           String?   @db.VarChar(100)
+  nama_diklat   String?   @db.VarChar(100)
+  no_sertifikat String?   @db.VarChar(100)
+  tahun         String?   @db.VarChar(100)
+  tempat        String?   @db.VarChar(100)
+  tanggal_mulai DateTime? @db.Date
+  upload        String?   @db.VarChar(100)
+
+  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+}
+
+model riwayat_pendidikan {
+  id              Int       @id @default(autoincrement())
+  nik             String?   @db.VarChar(100)
+  id_pendidikan   Int?
+  asal_pendidikan String?   @db.VarChar(100)
+  tahun_lulus     String?   @db.VarChar(100)
+  upload_ijazah   String?   @db.VarChar(100)
+  last_upload     DateTime? @updatedAt @db.Timestamp(0)
+
+  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+}
+
+model riwayat_keluarga {
+  id_keluarga       Int       @id @default(autoincrement())
+  nik               String?   @db.VarChar(100)
+  status_perkawinan String?   @db.VarChar(100)
+  id_anak           String?   @db.VarChar(100)
+  nama_ismi         String?   @db.VarChar(100)
+  pekerjaan_ismi    String?   @db.VarChar(100)
+  upload_kk         String?   @db.VarChar(100)
+  last_upload       DateTime? @updatedAt @db.Timestamp(0)
+
+  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+}
+
+model riwayat_pengangkatan {
+  id                 Int       @id @default(autoincrement())
+  nik                String?   @db.VarChar(100)
+  status_kepegawaian String?   @db.VarChar(100)
+  status_keaktivan   String?   @db.VarChar(100)
+  tmt                String?   @db.VarChar(100)
+  penempatan         String?   @db.VarChar(100)
+  nomor_sk           String?   @db.VarChar(100)
+  lembaga_pengangkat String?   @db.VarChar(100)
+  sumber_gaji        String?   @db.VarChar(100)
+  upload_sk          String?   @db.VarChar(100)
+  last_upload        DateTime? @updatedAt @db.Timestamp(0)
+
+  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+}
+
+model tmst_pajak {
+  id          Int     @id @default(autoincrement())
+  nik         String? @db.VarChar(102)
+  nomor_npwp  String? @db.VarChar(102)
+  upload_npwp String? @db.VarChar(102)
+
+  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+}
+
+model tmst_askes {
+  id           Int     @id @default(autoincrement())
+  nik          String? @db.VarChar(100)
+  no_askes     String? @db.VarChar(100)
+  nama_askes   String? @db.VarChar(100)
+  upload_askes String? @db.VarChar(100)
+
+  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+}
+
+model tmst_biro {
+  id        Int     @id @default(autoincrement())
+  id_biro   String? @db.VarChar(100)
+  nama_biro String  @db.VarChar(100)
+}
+
+model tref_jabatan {
+  id_jabatan   Int     @id @default(autoincrement())
+  nama_jabatan String? @db.VarChar(102)
+}
+
+model tref_pendidikan {
+  id           Int     @id @default(autoincrement())
+  nama_jenjang String? @db.VarChar(102)
+  nama_panjang String? @db.VarChar(102)
+}
+
+model user {
+  id                          Int     @id @default(autoincrement()) @db.UnsignedInt
+  ip_address                  String  @db.VarChar(45)
+  username                    String? @db.VarChar(100)
+  password                    String  @db.VarChar(255)
+  email                       String  @unique(map: "uc_email") @db.VarChar(254)
+  activation_selector         String? @unique(map: "uc_activation_selector") @db.VarChar(255)
+  activation_code             String? @db.VarChar(255)
+  forgotten_password_selector String? @unique(map: "uc_forgotten_password_selector") @db.VarChar(255)
+  forgotten_password_code     String? @db.VarChar(255)
+  forgotten_password_time     Int?    @db.UnsignedInt
+  remember_selector           String? @unique(map: "uc_remember_selector") @db.VarChar(255)
+  remember_code               String? @db.VarChar(255)
+  created_on                  Int     @db.UnsignedInt
+  last_login                  Int?    @db.UnsignedInt
+  active                      Int?    @db.UnsignedTinyInt
+  first_name                  String? @db.VarChar(50)
+  last_name                   String? @db.VarChar(50)
+  company                     String? @db.VarChar(100)
+  phone                       String? @db.VarChar(20)
+
+  @@map("users")
+}
+
+model groups {
+  id          Int    @id @default(autoincrement()) @db.UnsignedMediumInt
+  name        String @db.VarChar(20)
+  description String @db.VarChar(100)
+}
+
+model users_groups {
+  id       Int @id @default(autoincrement()) @db.UnsignedInt
+  user_id  Int @db.UnsignedInt
+  group_id Int @db.UnsignedMediumInt
+
+  @@unique([user_id, group_id], map: "uc_users_groups")
+  @@index([group_id], map: "fk_users_groups_groups1_idx")
+  @@index([user_id], map: "fk_users_groups_users1_idx")
+}
+
+model tmst_dosen {
+  nik                          String    @id @db.VarChar(20)
+  nidn                         String?   @db.VarChar(10)
+  nuptk                        String?   @db.VarChar(50)
+  kode_program_studi           String?   @db.Char(5)
+  nama_dosen                   String?   @db.VarChar(100)
+  nomor_ktp                    String?   @db.VarChar(25)
+  agama                        String?   @db.VarChar(255)
+  gelar_akademik_depan         String?   @db.VarChar(30)
+  gelar_akademik_belakang      String?   @db.VarChar(30)
+  jenis_kelamin                String?   @db.Char(1)
+  tempat_lahir                 String?   @db.VarChar(20)
+  tanggal_lahir                DateTime? @db.Date
+  status_aktif                 String?   @db.Char(1)
+  mulai_masuk_dosen            DateTime? @db.Date
+  mulai_semester               String?   @db.Char(5)
+  kode_jenjang_pendidikan      Int?
+  kode_jabatan_akademik        String?   @db.Char(1)
+  alamat                       String?   @db.VarChar(255)
+  no_sertifikasi_dosen         String?   @db.Char(11)
+  tgl_keluar_sertifikasi_dosen DateTime? @db.Date
+  telepon                      String?   @db.VarChar(50)
+  upload_ktp                   String?   @db.VarChar(50)
+  pp                           String?   @db.VarChar(255)
+  nama_ibu_kandung             String?   @db.VarChar(100)
+  tgl_selesai_studi            DateTime? @db.Date
+
+  @@index([kode_program_studi], map: "tmst_dosen_FK_tmst_dosen_tmst_program_studi")
+  @@index([kode_jabatan_akademik], map: "tmst_dosen_FK_tmst_dosen_tref_jabatan_akademik")
+  @@index([kode_jenjang_pendidikan], map: "tmst_dosen_FK_tmst_dosen_tref_jenjang_pendidikan")
+}
+
+model activity_logs {
+  id            Int       @id @default(autoincrement())
+  nik_operator  String?   @db.VarChar(20)
+  nama_operator String?   @db.VarChar(100)
+  aksi          String?   @db.VarChar(255)
+  target_nik    String?   @db.VarChar(20)
+  detail        String?   @db.Text
+  created_at    DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model login_attempts {
+  id         Int    @id @default(autoincrement()) @db.UnsignedInt
+  ip_address String @db.VarChar(45)
+  login      String @db.VarChar(100)
+  time       Int?   @db.UnsignedInt
+}
+
+model menu {
+  id_menu Int     @id @default(autoincrement())
+  name    String? @db.VarChar(100)
+}
+
+model mst_program_studi {
+  id_lem                  String? @db.VarChar(255)
+  kode_program_studi      String  @id @db.VarChar(10)
+  kode_perguruan_tinggi   String? @db.VarChar(10)
+  kode_fakultas           String? @db.VarChar(5)
+  nama_fakultas           String? @db.VarChar(255)
+  nama_program_studi      String? @db.VarChar(50)
+  kode_jenjang_pendidikan Int?    @db.TinyInt
+}
+
+model riwayat_mutasi {
+  id               Int     @id @default(autoincrement())
+  nik              String? @db.VarChar(100)
+  tempat_lama      String? @db.VarChar(100)
+  tempat_baru      String? @db.VarChar(100)
+  tanggal_mutasi   String? @db.VarChar(100)
+  upload_sk_mutasi String? @db.VarChar(100)
+}
+
+model riwayat_pendidikan_dosen {
+  id              Int       @id @default(autoincrement())
+  nik             String?   @db.VarChar(100)
+  id_pendidikan   String?   @db.VarChar(100)
+  asal_pendidikan String?   @db.VarChar(100)
+  tahun_lulus     String?   @db.VarChar(100)
+  upload_ijazah   String?   @db.VarChar(100)
+  last_upload     DateTime? @db.Timestamp(0)
+}
+
+model tb_anak {
+  id_anak     Int     @id @default(autoincrement())
+  id_keluarga String? @db.VarChar(100)
+  nama_anak   String? @db.VarChar(100)
+}
+
+model tmst_jafung {
+  id          Int       @id @default(autoincrement())
+  nik         String?   @db.VarChar(255)
+  id_jafung   String?   @db.Char(11)
+  id_pangkat  String?   @db.VarChar(255)
+  no_sk       String?   @db.VarChar(255)
+  tmt         String?   @db.VarChar(255)
+  file_upload String?   @db.VarChar(255)
+  last_upload DateTime? @db.Timestamp(0)
+}
+
+model tmst_pangkat {
+  id          Int       @id @default(autoincrement())
+  nik         String?   @db.VarChar(255)
+  pangkat     String?   @db.VarChar(255)
+  no_sk       String?   @db.VarChar(255)
+  tmt         String?   @db.VarChar(255)
+  upload_sk   String?   @db.VarChar(255)
+  last_update DateTime? @db.Timestamp(0)
+}
+
+model tmst_sertifikasi {
+  id                    Int       @id @default(autoincrement())
+  nik                   String?   @db.VarChar(255)
+  jenis_sertifikasi     String?   @db.VarChar(255)
+  bidang_studi          String?   @db.VarChar(255)
+  no_reg_sertifikasi    String?   @db.VarChar(255)
+  no_sk                 String?   @db.VarChar(255)
+  tahun                 String?   @db.VarChar(255)
+  upload_sk_sertifikasi String?   @db.VarChar(255)
+  last_update           DateTime? @db.Timestamp(0)
+}
+
+model tmst_skpns {
+  id           Int     @id @default(autoincrement())
+  nik          String? @db.VarChar(255)
+  nomor_skcpns String? @db.VarChar(255)
+  nomor_skpns  String? @db.VarChar(255)
+  upload_skpns String? @db.VarChar(255)
+}
+
+model tref_jafung {
+  id   Int     @id @default(autoincrement())
+  nama String? @db.VarChar(255)
+}
+
+model tref_kegiatan {
+  id_anggaran   Int     @id @default(autoincrement())
+  nama_program  String? @db.VarChar(255)
+  nama_kegiatan String? @db.VarChar(255)
+  id_biro       String? @db.VarChar(255)
+  tahun         String? @db.VarChar(255)
+  semester      String? @db.VarChar(255)
+}
+
+model tref_pangkat {
+  id       Int     @id @default(autoincrement())
+  id_jaf   String? @db.VarChar(255)
+  pangkat  String? @db.VarChar(255)
+  golongan String? @db.VarChar(255)
+  ak       String? @db.VarChar(255)
+}
+
+model user_access_menu {
+  id      Int  @id @default(autoincrement())
+  user_id Int?
+  menu_id Int?
+}
+
+model user_sub_menu {
+  id       Int     @id @default(autoincrement())
+  menu_id  Int?
+  titel    String? @db.VarChar(102)
+  ulr      String? @db.VarChar(102)
+  icon     String? @db.VarChar(102)
+  is_activ Int?
+}
+
+model riwayat_jafung {
+  id        Int     @id @default(autoincrement())
+  nik       String? @db.VarChar(100)
+  id_jafung Int?
+  no_sk     String? @db.VarChar(100)
+  tmt       String? @db.VarChar(100)
+  upload_sk String? @db.VarChar(100)
+}
