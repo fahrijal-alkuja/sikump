@@ -20,12 +20,11 @@ export default defineNuxtConfig({
     }
   },
   runtimeConfig: {
-    databaseUrl: process.env.DATABASE_URL,
     public: {
       productionAssetUrl: process.env.PRODUCTION_ASSET_URL || ''
     }
   },
-  modules: ['@sidebase/nuxt-prisma'],
+  modules: [],
   css: ['~/assets/css/main.css'],
   future: {
     compatibilityVersion: 4,
