@@ -87,6 +87,24 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // --- Role-Based Security Check ---
+    const session = requireAuth(event)
+    if (session.role === 'prodi' && session.unit) {
+      if (data.type === 'dosen') {
+        if (data.kode_program_studi !== session.unit) {
+          throw createError({ statusCode: 403, statusMessage: 'Forbidden: Unit mismatch' })
+        }
+      } else {
+        // For Tendik, check latest biro ID
+        const check: any = await prisma.$queryRaw`
+          SELECT id_biro FROM riwayat_jabatan WHERE nik = ${nik} ORDER BY id DESC LIMIT 1
+        `
+        if (check[0]?.id_biro !== session.unit) {
+          throw createError({ statusCode: 403, statusMessage: 'Forbidden: Unit mismatch' })
+        }
+      }
+    }
+
     return {
       success: true,
       data

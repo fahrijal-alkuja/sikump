@@ -13,11 +13,14 @@ export default defineEventHandler(async (event) => {
     const jafung = query.jafung as string || ''
     const status = query.status as string || ''
 
+    const user = useServerSession(event)
+    const isProdi = user?.role === 'prodi'
+    const userUnit = user?.unit
+
     let employees: any[] = []
 
     if (ikatan_kerja === '1') {
       // --- DOSEN LOGIC ---
-      // Map UI Education IDs to Dosen DB Codes: UI 6(S3)->DB 1, UI 5(S2)->DB 2
       let dbEdu = education
       if (education === '6') dbEdu = '1'
       else if (education === '5') dbEdu = '2'
@@ -35,7 +38,13 @@ export default defineEventHandler(async (event) => {
         WHERE d.nik NOT LIKE '0000%'
       `
       
-      if (biro_id) sql += ` AND d.kode_program_studi = '${biro_id}'`
+      // If Admin Prodi, force filter to their unit
+      if (isProdi && userUnit) {
+        sql += ` AND d.kode_program_studi = '${userUnit}'`
+      } else if (biro_id) {
+        sql += ` AND d.kode_program_studi = '${biro_id}'`
+      }
+
       if (dbEdu) sql += ` AND d.kode_jenjang_pendidikan = '${dbEdu}'`
       if (status === '1') {
         sql += ` AND (d.status_aktif = '1' OR d.status_aktif IS NULL OR d.status_aktif = '')`
@@ -44,7 +53,6 @@ export default defineEventHandler(async (event) => {
       }
       if (search) sql += ` AND (d.nama_dosen LIKE '%${search}%' OR d.nik LIKE '%${search}%')`
       
-      // Filter by Jafung (Check subquery result)
       if (jafung) {
         sql = `SELECT * FROM (${sql}) as base WHERE current_jafung = '${jafung}'`
       }
@@ -70,12 +78,14 @@ export default defineEventHandler(async (event) => {
         WHERE k.nik NOT LIKE '0000%'
       `
       
-      if (biro_id) {
+      // If Admin Prodi/Biro, force filter to their unit in riwayat_jabatan
+      if (isProdi && userUnit) {
+        sql += ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND rj.id_biro = '${userUnit}')`
+      } else if (biro_id) {
         sql += ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND rj.id_biro = '${biro_id}')`
       }
 
       if (education) {
-        // Tendik uses standard IDs (4,5,6) in riwayat_pendidikan table
         sql += ` AND EXISTS (SELECT 1 FROM riwayat_pendidikan rp WHERE rp.nik = k.nik AND rp.id_pendidikan = '${education}')`
       }
 
