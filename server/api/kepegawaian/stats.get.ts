@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client'
 import { defineEventHandler } from 'h3'
-
-const prisma = new PrismaClient()
+import { requireAuth } from '../../utils/auth'
+import { prisma } from '../../utils/prisma'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -55,13 +54,22 @@ export default defineEventHandler(async (event) => {
     `)
     
     const s3CountRes: any = await runQuery(`
-      SELECT COUNT(DISTINCT rp.nik) as count 
-      FROM riwayat_pendidikan rp
-      JOIN tmst_dosen d ON rp.nik = d.nik
-      WHERE rp.id_pendidikan = 6 ${dFilter}
+      SELECT COUNT(DISTINCT nik) as count FROM (
+        SELECT nik FROM tmst_dosen WHERE kode_jenjang_pendidikan = 1 AND nik NOT LIKE '0000%'
+        UNION
+        SELECT nik FROM tmst_jafung WHERE id_jafung = 4
+      ) as s3_combined
+      WHERE nik IN (SELECT nik FROM tmst_dosen WHERE nik NOT LIKE '0000%' ${dFilter})
     `)
     const s3Actual = Number(s3CountRes[0]?.count || 0)
     const s3Target = Math.ceil(dosenCount * 0.4) 
+
+    const s2CountRes: any = await runQuery(`
+      SELECT COUNT(*) as count 
+      FROM tmst_dosen d
+      WHERE d.kode_jenjang_pendidikan = 5 AND d.nik NOT LIKE '0000%' ${dFilter}
+    `)
+    const s2Actual = Number(s2CountRes[0]?.count || 0)
 
     // 5. Training Counts
     const dosenTrainingRes: any = await runQuery(`
@@ -183,7 +191,7 @@ export default defineEventHandler(async (event) => {
           trainedList: trainedTendikList
         },
         alerts: alertsRes.map((a: any) => ({ ...a, identitas: a.nuptk || a.nik })),
-        matrix: { s3Actual, s3Target },
+        matrix: { s3Actual, s3Target, s2Actual },
         retirementDosen: retirementDosenRes,
         retirementTendik: retirementTendikRes,
         heatmapDosen: heatmapDosenRes,

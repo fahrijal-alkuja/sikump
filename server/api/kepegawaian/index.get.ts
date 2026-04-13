@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client'
-import { defineEventHandler, getQuery, createError } from 'h3'
-
-const prisma = new PrismaClient()
+import { defineEventHandler, getQuery } from 'h3'
+import { prisma } from '../../utils/prisma'
+import { useServerSession } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -22,9 +21,6 @@ export default defineEventHandler(async (event) => {
     if (ikatan_kerja === '1') {
       // --- DOSEN LOGIC ---
       let dbEdu = education
-      if (education === '6') dbEdu = '1'
-      else if (education === '5') dbEdu = '2'
-      else if (education === '4') dbEdu = '3'
 
       let sql = `
         SELECT 
@@ -38,7 +34,6 @@ export default defineEventHandler(async (event) => {
         WHERE d.nik NOT LIKE '0000%'
       `
       
-      // If Admin Prodi, force filter to their unit
       if (isProdi && userUnit) {
         sql += ` AND d.kode_program_studi = '${userUnit}'`
       } else if (biro_id) {
@@ -51,7 +46,7 @@ export default defineEventHandler(async (event) => {
       } else if (status) {
         sql += ` AND d.status_aktif = '${status}'`
       }
-      if (search) sql += ` AND (d.nama_dosen LIKE '%${search}%' OR d.nik LIKE '%${search}%')`
+      if (search) sql += ` AND (d.nama_dosen LIKE '%${search.replace(/'/g, "''")}%' OR d.nik LIKE '%${search.replace(/'/g, "''")}%')`
       
       if (jafung) {
         sql = `SELECT * FROM (${sql}) as base WHERE current_jafung = '${jafung}'`
@@ -78,7 +73,6 @@ export default defineEventHandler(async (event) => {
         WHERE k.nik NOT LIKE '0000%'
       `
       
-      // If Admin Prodi/Biro, force filter to their unit in riwayat_jabatan
       if (isProdi && userUnit) {
         sql += ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND rj.id_biro = '${userUnit}')`
       } else if (biro_id) {
@@ -96,7 +90,7 @@ export default defineEventHandler(async (event) => {
       }
 
       if (search) {
-        sql += ` AND (k.nama LIKE '%${search}%' OR k.nik LIKE '%${search}%')`
+        sql += ` AND (k.nama LIKE '%${search.replace(/'/g, "''")}%' OR k.nik LIKE '%${search.replace(/'/g, "''")}%')`
       }
 
       sql += ` ORDER BY nama ASC LIMIT 500`
@@ -111,6 +105,7 @@ export default defineEventHandler(async (event) => {
 
     return { success: true, data: employees }
   } catch (error: any) {
+    console.error('Fetch Employees Error:', error)
     return { success: false, message: error.message }
   }
 })

@@ -30,3 +30,14 @@ export const requireAuth = (event: H3Event) => {
   }
   return session
 }
+
+export const requireAdmin = (event: H3Event) => {
+  const session = requireAuth(event)
+  if (session.role !== 'admin') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden: Admin access required'
+    })
+  }
+  return session
+}

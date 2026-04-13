@@ -1,9 +1,8 @@
-import { defineEventHandler, readMultipartFormData, createError } from 'h3'
-import { PrismaClient } from '@prisma/client'
+import { defineEventHandler, readMultipartFormData, createError, readBody } from 'h3'
+import { requireAuth } from '../../../utils/auth'
+import { prisma } from '../../../utils/prisma'
 import fs from 'node:fs'
 import path from 'node:path'
-
-const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   requireAuth(event)
@@ -75,6 +74,30 @@ export default defineEventHandler(async (event) => {
     const result = await prisma[table].create({
       data: data
     })
+
+    // --- AUTO-SYNC LOGIC ---
+    // 1. Sync Pendidikan to tmst_dosen
+    if (table.includes('pendidikan') && data.nik && data.id_pendidikan) {
+      const isDosen = await prisma.tmst_dosen.findUnique({ where: { nik: data.nik } })
+      if (isDosen) {
+        await prisma.tmst_dosen.update({
+          where: { nik: data.nik },
+          data: { kode_jenjang_pendidikan: Number(data.id_pendidikan) }
+        })
+      }
+    }
+
+    // 2. Sync Jafung (Optional but recommended for consistency)
+    if ((table === 'riwayat_jafung' || table === 'tmst_jafung') && data.nik && data.id_jafung) {
+      const isDosen = await prisma.tmst_dosen.findUnique({ where: { nik: data.nik } })
+      if (isDosen) {
+        await prisma.tmst_dosen.update({
+          where: { nik: data.nik },
+          data: { kode_jabatan_akademik: String(data.id_jafung) }
+        })
+      }
+    }
+
     return { success: true, data: result }
   } catch (error: any) {
     console.error(`Dynamic Post Error:`, error)

@@ -1,7 +1,6 @@
 import { defineEventHandler, createError } from 'h3'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { requireAuth } from '../../../../utils/auth'
+import { prisma } from '../../../../utils/prisma'
 
 export default defineEventHandler(async (event) => {
   requireAuth(event)

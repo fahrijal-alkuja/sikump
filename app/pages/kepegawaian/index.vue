@@ -56,6 +56,15 @@ const getPercent = (val: number, total: number) => {
           </div>
         </div>
 
+        <div class="glass-card metric-item master">
+          <div class="m-icon">📚</div>
+          <div class="m-data">
+            <label>Dosen Berpendidikan S2</label>
+            <div class="num">{{ stats.matrix.s2Actual }}</div>
+            <div class="m-footer">Magister Aktif</div>
+          </div>
+        </div>
+
         <div class="glass-card metric-item alert">
           <div class="m-icon">🔔</div>
           <div class="m-data">
@@ -259,7 +268,7 @@ const getPercent = (val: number, total: number) => {
 .refresh-btn { background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.2); color: #818cf8; padding: 0.6rem 1.2rem; transform: translateY(-10px); }
 
 /* Row 1 Metrics */
-.metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+.metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
 .metric-item { display: flex; align-items: center; gap: 1.5rem; padding: 2rem; }
 .m-icon { font-size: 2.5rem; filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.3)); }
 .m-data label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em; }

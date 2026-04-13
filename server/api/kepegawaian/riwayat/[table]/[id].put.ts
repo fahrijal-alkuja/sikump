@@ -1,9 +1,8 @@
-import { defineEventHandler, readMultipartFormData, createError } from 'h3'
-import { PrismaClient } from '@prisma/client'
+import { defineEventHandler, readMultipartFormData, createError, readBody } from 'h3'
+import { requireAuth } from '../../../../utils/auth'
+import { prisma } from '../../../../utils/prisma'
 import fs from 'node:fs'
 import path from 'node:path'
-
-const prisma = new PrismaClient()
 
 export default defineEventHandler(async (event) => {
   requireAuth(event)
@@ -62,6 +61,32 @@ export default defineEventHandler(async (event) => {
       where: { id },
       data: data
     })
+
+    // --- AUTO-SYNC LOGIC ---
+    // 1. Sync Pendidikan to tmst_dosen
+    if (table.includes('pendidikan') && result.nik && (data.id_pendidikan || result.id_pendidikan)) {
+      const targetEdu = data.id_pendidikan || result.id_pendidikan
+      const isDosen = await prisma.tmst_dosen.findUnique({ where: { nik: result.nik } })
+      if (isDosen) {
+        await prisma.tmst_dosen.update({
+          where: { nik: result.nik },
+          data: { kode_jenjang_pendidikan: Number(targetEdu) }
+        })
+      }
+    }
+
+    // 2. Sync Jafung
+    if ((table === 'riwayat_jafung' || table === 'tmst_jafung') && result.nik && (data.id_jafung || result.id_jafung)) {
+      const targetJafung = data.id_jafung || result.id_jafung
+      const isDosen = await prisma.tmst_dosen.findUnique({ where: { nik: result.nik } })
+      if (isDosen) {
+        await prisma.tmst_dosen.update({
+          where: { nik: result.nik },
+          data: { kode_jabatan_akademik: String(targetJafung) }
+        })
+      }
+    }
+
     return { success: true, data: result }
   } catch (error: any) {
     console.error(`Dynamic Put Error:`, error)

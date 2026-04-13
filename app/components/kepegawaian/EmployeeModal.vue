@@ -28,6 +28,7 @@ const form = ref({
   tanggal_lahir: '',
   telepon: '',
   alamat: '',
+  pendidikan: '',
   ikatan_kerja: props.type
 })
 
@@ -55,6 +56,7 @@ watch(() => props.show, (newVal) => {
       tanggal_lahir: e.tanggal_lahir ? parseLegacyDate(e.tanggal_lahir) : '',
       telepon: e.telepon || '',
       alamat: e.alamat || '',
+      pendidikan: e.kode_jenjang_pendidikan || '',
       ikatan_kerja: props.type
     }
   } else if (newVal) {
@@ -93,7 +95,7 @@ const resetForm = () => {
   form.value = {
     nik: '', nama: '', nuptk: '', nidn: '', unit_id: '',
     jenis_kelamin: 'L', tempat_lahir: '', tanggal_lahir: '',
-    telepon: '', alamat: '', ikatan_kerja: props.type
+    telepon: '', alamat: '', pendidikan: '', ikatan_kerja: props.type
   }
 }
 
@@ -154,6 +156,15 @@ const parseLegacyDate = (dateStr: string) => {
                   <select v-model="form.unit_id" class="glass-input">
                     <option value="">Pilih Prodi</option>
                     <option v-for="p in prodis" :key="p.id" :value="p.id">{{ p.nama }}</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Pendidikan Terakhir</label>
+                  <select v-model="form.pendidikan" class="glass-input">
+                    <option value="">Pilih Jenjang</option>
+                    <option value="4">S1 - Sarjana</option>
+                    <option value="5">S2 - Magister</option>
+                    <option value="6">S3 - Doktor</option>
                   </select>
                 </div>
               </template>
