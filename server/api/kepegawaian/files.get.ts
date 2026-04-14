@@ -11,24 +11,10 @@ export default defineEventHandler(async (event) => {
     // Determine sub-prodi codes for faculty-level file access
     let subProdiCodes: string[] = []
     if (isProdi && unit) {
-      // First try direct code match
-      let prodis: any[] = await prisma.$queryRawUnsafe(`
+      const prodis: any[] = await prisma.$queryRawUnsafe(`
         SELECT kode_program_studi FROM mst_program_studi 
         WHERE kode_program_studi = '${unit}' OR kode_fakultas = '${unit}'
       `)
-      
-      // If not found, try name-based matching
-      if (prodis.length === 0) {
-        const unitData: any[] = await prisma.$queryRawUnsafe(`SELECT nama_biro FROM tmst_biro WHERE id_biro = '${unit}'`)
-        const unitName = unitData[0]?.nama_biro || ''
-        if (unitName) {
-          const coreName = unitName.replace(/OL$/i, '').replace(/^FAKULTAS\s+/i, '').trim()
-          prodis = await prisma.$queryRawUnsafe(`
-            SELECT kode_program_studi FROM mst_program_studi 
-            WHERE nama_fakultas LIKE '%${coreName}%' OR nama_program_studi LIKE '%${coreName}%'
-          `)
-        }
-      }
       subProdiCodes = prodis.map(p => p.kode_program_studi)
     }
     

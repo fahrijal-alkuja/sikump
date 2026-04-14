@@ -25,27 +25,10 @@ export default defineEventHandler(async (event) => {
       // Determine if the unit is a Faculty or a single Prodi
       let subProdiCodes: string[] = []
       if (isProdi && userUnit) {
-        // First try direct code match
-        let prodiList: any[] = await prisma.$queryRawUnsafe(`
+        const prodiList: any[] = await prisma.$queryRawUnsafe(`
           SELECT kode_program_studi FROM mst_program_studi 
           WHERE kode_program_studi = '${userUnit.trim()}' OR kode_fakultas = '${userUnit.trim()}'
         `)
-        
-        // If not found, try name-based matching (e.g. mapping Biro FISIPOL to Faculty Sosial Dan Politik)
-        if (prodiList.length === 0) {
-          const unitData: any[] = await prisma.$queryRawUnsafe(`SELECT nama_biro FROM tmst_biro WHERE id_biro = '${userUnit.trim()}'`)
-          const unitName = unitData[0]?.nama_biro || ''
-          
-          if (unitName) {
-            // Extract core name, e.g., FISIPOL -> FISIP
-            const coreName = unitName.replace(/OL$/i, '').replace(/^FAKULTAS\s+/i, '').trim()
-            prodiList = await prisma.$queryRawUnsafe(`
-              SELECT kode_program_studi FROM mst_program_studi 
-              WHERE nama_fakultas LIKE '%${coreName}%' OR nama_program_studi LIKE '%${coreName}%'
-            `)
-          }
-        }
-        
         subProdiCodes = prodiList.map(p => p.kode_program_studi)
       }
 
