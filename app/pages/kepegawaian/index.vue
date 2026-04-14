@@ -14,6 +14,9 @@ const stats = computed<any>(() => {
 const { data: activeUsersData } = await useFetch<any>('/api/kepegawaian/stats/active-users')
 const activeUsers = computed(() => activeUsersData.value?.success ? activeUsersData.value.data : [])
 
+const { data: tendikExData } = await useFetch<any>('/api/kepegawaian/stats/excellent-tendik')
+const tendikEx = computed(() => tendikExData.value?.success ? tendikExData.value.data : { ranking: [], expertise: [] })
+
 const getJafungName = (code: string | number) => {
   const map: any = { 1: 'Asisten Ahli', 2: 'Lektor', 3: 'Lektor Kepala', 4: 'Guru Besar' }
   return map[code] || '-'
@@ -152,26 +155,52 @@ const getPercent = (val: number, total: number) => {
         </div>
       </section>
 
-      <!-- ROW 3: TENDIK ANALYTICS -->
+      <!-- ROW 3: TENDIK ANALYTICS & EXCELLENCE -->
       <header class="section-divider mt-12">
-        <h3>Manajemen & Pengembangan Tendik</h3>
+        <h3>Ekselensi & Analisis Kompetensi Tendik</h3>
         <span class="line"></span>
       </header>
-      <section class="analysis-grid tendik">
-        <!-- Trained Tendik List -->
-        <div class="glass-card table-panel full-width">
+      <section class="analysis-grid tendik-ex-grid">
+        <!-- Top 10 Excellent Tendik -->
+        <div class="glass-card table-panel">
           <div class="p-header">
-            <h3>Personil Tendik Sudah Pelatihan</h3>
+            <h3>Top 10 Excellent Tendik</h3>
           </div>
-          <div class="grid-2-col">
-            <div v-for="t in stats.tendik.trainedList" :key="t.nik" class="alert-card">
+          <div class="alert-scroll">
+            <div v-for="(t, idx) in tendikEx.ranking" :key="t.nik" class="alert-card excellence-card">
+              <div class="rank-badge">{{ Number(idx) + 1 }}</div>
               <div class="a-info">
                 <span class="a-name">{{ t.nama }}</span>
-                <span class="a-meta">{{ t.unit || 'Biro Umum' }} | NIK: {{ t.nik }}</span>
+                <span class="a-meta">{{ t.unit || 'Unit Kerja' }} | Score: {{ t.score }} Pts</span>
               </div>
-              <NuxtLink :to="'/kepegawaian/' + t.nik" class="a-link">Review ↗</NuxtLink>
+              <div class="score-details" title="Pelatihan | Sertifikasi">
+                 {{ t.total_pelatihan }} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                 | {{ t.total_sertifikasi }} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mini-icon"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              </div>
             </div>
-            <div v-if="stats.tendik.trainedList.length === 0" class="text-center text-muted py-8 w-full">Belum ada data pelatihan tendik</div>
+            <div v-if="tendikEx.ranking.length === 0" class="text-center text-muted py-8">Belum ada data kompetensi tendik</div>
+          </div>
+        </div>
+
+        <!-- Dominant Expertise Analysis -->
+        <div class="glass-card analytics-panel">
+          <div class="p-header">
+            <h3>Peta Keahlian Dominan (Tendik)</h3>
+          </div>
+          <div class="expertise-viz">
+             <div v-for="exp in tendikEx.expertise" :key="exp.name" class="exp-row">
+                <div class="exp-label">
+                   <span class="exp-name">{{ exp.name }}</span>
+                   <span class="exp-val">{{ exp.count }} Personil</span>
+                </div>
+                <div class="exp-bar-bg">
+                   <div class="exp-bar-fill" :style="{ width: (Number(exp.count) / Number(tendikEx.ranking[0]?.score || 10) * 100) + '%' }"></div>
+                </div>
+             </div>
+             <div class="exp-insight">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <p>Data ini menunjukkan fokus pengembangan SDM Tendik. Dominasi pada bidang tertentu membantu penempatan tugas yang lebih presisi.</p>
+             </div>
           </div>
         </div>
       </section>
@@ -265,7 +294,7 @@ const getPercent = (val: number, total: number) => {
             </div>
             <div class="active-users-list">
                 <div v-for="(user, idx) in activeUsers" :key="user.username" class="user-rank-card">
-                    <div class="rank-num">{{ idx + 1 }}</div>
+                    <div class="rank-num">{{ Number(idx) + 1 }}</div>
                     <div class="user-avatar">{{ user.name[0] }}</div>
                     <div class="user-info">
                         <span class="u-name">{{ user.name }}</span>
@@ -488,7 +517,38 @@ const getPercent = (val: number, total: number) => {
 .summary-visual svg { width: 40px; height: 40px; }
 .empty-stats { padding: 3rem; text-align: center; color: #94a3b8; font-weight: 700; }
 
+/* Tendik Excellence Styles */
+.tendik-ex-grid { grid-template-columns: 1fr 1fr; }
+.excellence-card { position: relative; padding-left: 3.5rem; }
+.rank-badge { 
+  position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); 
+  width: 28px; height: 28px; background: #f1f5f9; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; color: #64748b; font-size: 0.9rem;
+}
+.excellence-card:nth-child(1) .rank-badge { background: #fef3c7; color: #d97706; }
+.excellence-card:nth-child(2) .rank-badge { background: #f1f5f9; color: #475569; }
+.excellence-card:nth-child(3) .rank-badge { background: #ffedd5; color: #9a3412; }
+
+.score-details { font-size: 0.75rem; font-weight: 800; color: #94a3b8; display: flex; align-items: center; gap: 4px; }
+.mini-icon { width: 12px; height: 12px; opacity: 0.6; }
+
+.expertise-viz { display: flex; flex-direction: column; gap: 1.5rem; }
+.exp-row { width: 100%; }
+.exp-label { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+.exp-name { font-weight: 800; color: #334155; font-size: 0.9rem; }
+.exp-val { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
+.exp-bar-bg { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.exp-bar-fill { height: 100%; background: linear-gradient(to right, #6366f1, #a855f7); border-radius: 4px; }
+
+.exp-insight { 
+  margin-top: 2rem; padding: 1.25rem; background: #f8fafc; border-radius: 16px; border-left: 4px solid #6366f1;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.exp-insight svg { width: 20px; height: 20px; color: #6366f1; flex-shrink: 0; margin-top: 2px; }
+.exp-insight p { font-size: 13px; color: #64748b; line-height: 1.6; font-weight: 600; margin: 0; }
+
 @media (max-width: 1024px) {
-  .analysis-grid.dosen, .grid-2-col, .analysis-grid.intelligence-grid, .active-users-grid { grid-template-columns: 1fr; }
+  .analysis-grid.dosen, .grid-2-col, .analysis-grid.intelligence-grid, .active-users-grid, .tendik-ex-grid { grid-template-columns: 1fr; }
 }
 </style>
