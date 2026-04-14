@@ -7,12 +7,13 @@ const props = defineProps<{
 
 // --- FETCH REFERENCE DATA ---
 // @ts-ignore
-const { data: biroData } = await useFetch<any>('/api/kepegawaian/biro')
+const { data: biroStore } = await useFetch<any>('/api/kepegawaian/biro')
+const biroData = computed(() => biroStore.value?.data || [])
 
 const getBiroName = (id: string | number) => {
   if (!biroData.value) return id
   const b = biroData.value.find((x: any) => x.id_biro == id)
-  return b ? b.keterangan : id
+  return b ? b.nama_biro : id
 }
 
 // --- HELPER: ROBUST DATE PARSING ---
