@@ -1,6 +1,7 @@
 import { defineEventHandler, createError } from 'h3'
 import { requireAdmin } from '../../utils/auth'
 import { prisma } from '../../utils/prisma'
+import { logActivity } from '../../utils/logger'
 
 export default defineEventHandler(async (event) => {
   requireAdmin(event)
@@ -22,8 +23,10 @@ export default defineEventHandler(async (event) => {
     const dosen: any = await prisma.tmst_dosen.findUnique({ where: { nik } })
     
     if (dosen) {
+      await logActivity(event, 'DELETE_DOSEN', nik, `Menghapus data Dosen: ${dosen.nama_dosen}`)
       await prisma.tmst_dosen.delete({ where: { nik } })
     } else {
+      await logActivity(event, 'DELETE_KARYAWAN', nik, `Menghapus data Karyawan: ${nik}`)
       await prisma.tmst_karyawan.delete({ where: { nik } })
     }
 

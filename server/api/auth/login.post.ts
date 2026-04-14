@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../utils/prisma'
 import { setAuthSession } from '../../utils/session'
+import { logActivity } from '../../utils/logger'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -74,6 +75,9 @@ export default defineEventHandler(async (event) => {
 
     // 5. Set Secure Session Cookie
     setAuthSession(event, sessionData)
+
+    // 6. Log Login Activity
+    await logActivity(event, 'LOGIN', username, `Berhasil login ke sistem sebagai ${sessionData.role.toUpperCase()}`)
 
     return {
       success: true,

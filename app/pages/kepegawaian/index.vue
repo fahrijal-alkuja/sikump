@@ -11,6 +11,9 @@ const stats = computed<any>(() => {
   return d?.success ? d.stats : null
 })
 
+const { data: activeUsersData } = await useFetch<any>('/api/kepegawaian/stats/active-users')
+const activeUsers = computed(() => activeUsersData.value?.success ? activeUsersData.value.data : [])
+
 const getJafungName = (code: string | number) => {
   const map: any = { 1: 'Asisten Ahli', 2: 'Lektor', 3: 'Lektor Kepala', 4: 'Guru Besar' }
   return map[code] || '-'
@@ -250,6 +253,46 @@ const getPercent = (val: number, total: number) => {
         <KepegawaianStrategicIntelligence :stats="stats" />
       </ClientOnly>
 
+      <!-- ROW 7: TOP ACTIVE USERS -->
+      <header class="section-divider mt-12">
+        <h3>Peringkat Aktivitas Operator Prodi</h3>
+        <span class="line"></span>
+      </header>
+      <section class="analysis-grid active-users-grid">
+         <div class="glass-card active-users-panel">
+            <div class="p-header">
+                <h3>Top 5 User Prodi Teraktif</h3>
+            </div>
+            <div class="active-users-list">
+                <div v-for="(user, idx) in activeUsers" :key="user.username" class="user-rank-card">
+                    <div class="rank-num">{{ idx + 1 }}</div>
+                    <div class="user-avatar">{{ user.name[0] }}</div>
+                    <div class="user-info">
+                        <span class="u-name">{{ user.name }}</span>
+                        <span class="u-unit">{{ user.unit_name || 'Unit Kerja' }}</span>
+                    </div>
+                    <div class="activity-metric">
+                        <span class="count">{{ user.activity_count }}</span>
+                        <span class="label">Aksi</span>
+                    </div>
+                </div>
+                <div v-if="activeUsers.length === 0" class="empty-stats">Belum ada aktivitas tercatat dari user prodi.</div>
+            </div>
+         </div>
+         
+         <div class="glass-card summary-panel">
+            <div class="p-header">
+                <h3>Kinerja Administratif</h3>
+            </div>
+            <div class="summary-body">
+                <p class="summary-desc">Penilaian ini didasarkan pada akumulasi log aktivitas sistem secara real-time. Setiap penambahan, pembaruan, and validasi berkas oleh operator unit dihitung sebagai satu poin kontribusi aktif terhadap validitas data pangkalan SDM.</p>
+                <div class="summary-visual">
+                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"></path><path d="M18 20V4"></path><path d="M6 20v-4"></path></svg>
+                </div>
+            </div>
+         </div>
+      </section>
+
       <!-- ROW 7: QUICK ACTIONS -->
       <header class="section-divider mt-12">
         <h3>Akses Cepat Manajemen</h3>
@@ -415,7 +458,37 @@ const getPercent = (val: number, total: number) => {
 .li-unit { font-size: 0.7rem; color: #64748b; font-weight: 600; }
 
 .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+/* Active Users Styles */
+.active-users-grid { grid-template-columns: 1.2fr 0.8fr; }
+.active-users-panel { padding: 2rem; }
+.active-users-list { display: flex; flex-direction: column; gap: 1rem; }
+.user-rank-card { 
+  display: flex; align-items: center; gap: 1.5rem; background: #f8fafc; padding: 1rem 1.5rem; border-radius: 20px; 
+  border: 1px solid #f1f5f9; transition: all 0.3s;
+}
+.user-rank-card:hover { transform: translateX(10px); background: white; border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+
+.rank-num { font-size: 1.5rem; font-weight: 900; color: #cbd5e1; width: 30px; }
+.user-rank-card:nth-child(1) .rank-num { color: #f59e0b; }
+.user-rank-card:nth-child(2) .rank-num { color: #94a3b8; }
+.user-rank-card:nth-child(3) .rank-num { color: #b45309; }
+
+.user-avatar { width: 45px; height: 45px; background: #4f46e5; color: white; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; box-shadow: 0 8px 16px rgba(79, 70, 229, 0.2); }
+.user-info { flex: 1; }
+.u-name { display: block; font-weight: 800; color: #1e293b; font-size: 1rem; }
+.u-unit { font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+
+.activity-metric { text-align: right; }
+.activity-metric .count { display: block; font-size: 1.5rem; font-weight: 900; color: #4f46e5; line-height: 1; }
+.activity-metric .label { font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+
+.summary-panel { padding: 2rem; }
+.summary-desc { font-size: 14px; color: #64748b; line-height: 1.6; font-weight: 600; margin-bottom: 2rem; }
+.summary-visual { width: 80px; height: 80px; background: #eef2ff; color: #4f46e5; border-radius: 24px; display: flex; align-items: center; justify-content: center; margin-top: auto; }
+.summary-visual svg { width: 40px; height: 40px; }
+.empty-stats { padding: 3rem; text-align: center; color: #94a3b8; font-weight: 700; }
+
 @media (max-width: 1024px) {
-  .analysis-grid.dosen, .grid-2-col, .analysis-grid.intelligence-grid { grid-template-columns: 1fr; }
+  .analysis-grid.dosen, .grid-2-col, .analysis-grid.intelligence-grid, .active-users-grid { grid-template-columns: 1fr; }
 }
 </style>

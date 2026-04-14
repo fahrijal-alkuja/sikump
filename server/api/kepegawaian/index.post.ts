@@ -4,6 +4,7 @@ import { prisma } from '../../utils/prisma'
 import { writeFile, rename } from 'fs/promises'
 import path from 'path'
 import { getStoragePath } from '../../utils/storage'
+import { logActivity } from '../../utils/logger'
 
 export default defineEventHandler(async (event) => {
   requireAdmin(event)
@@ -51,6 +52,7 @@ export default defineEventHandler(async (event) => {
         INSERT INTO tmst_dosen (nik, nama_dosen, nidn, nuptk, kode_program_studi, jenis_kelamin, tempat_lahir, tanggal_lahir, telepon, status_aktif, kode_jenjang_pendidikan, upload_ktp)
         VALUES (${nik}, ${nama}, ${nidn || ''}, ${nuptk || ''}, ${unit_id || ''}, ${jenis_kelamin || 'L'}, ${tempat_lahir || ''}, ${tanggal_lahir ? tanggal_lahir : null}, ${telepon || ''}, '1', ${pendidikan || null}, ${ktpFinalName})
       `
+      await logActivity(event, 'CREATE_DOSEN', nik, `Menambah data Dosen baru: ${nama}`)
       return { success: true, message: 'Dosen berhasil ditambahkan' }
     } else {
       await prisma.$executeRaw`
@@ -65,6 +67,7 @@ export default defineEventHandler(async (event) => {
         `
       }
       
+      await logActivity(event, 'CREATE_KARYAWAN', nik, `Menambah data Karyawan baru: ${nama}`)
       return { success: true, message: 'Karyawan berhasil ditambahkan' }
     }
   } catch (error: any) {

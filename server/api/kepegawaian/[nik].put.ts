@@ -4,6 +4,7 @@ import { prisma } from '../../utils/prisma'
 import { writeFile } from 'fs/promises'
 import path from 'path'
 import { getStoragePath } from '../../utils/storage'
+import { logActivity } from '../../utils/logger'
 
 export default defineEventHandler(async (event) => {
   requireAdmin(event)
@@ -73,6 +74,7 @@ export default defineEventHandler(async (event) => {
         await prisma.$executeRaw`UPDATE tmst_dosen SET pp = ${upload_foto_name} WHERE nik = ${nik}`
       }
 
+      await logActivity(event, 'UPDATE_DOSEN', nik, `Memperbarui biodata Dosen: ${nama}`)
       return { success: true, message: 'Data dosen berhasil diperbarui' }
     } else {
       // Update Karyawan/Tendik
@@ -109,6 +111,7 @@ export default defineEventHandler(async (event) => {
         }
       }
       
+      await logActivity(event, 'UPDATE_KARYAWAN', nik, `Memperbarui biodata Karyawan: ${nama}`)
       return { success: true, message: 'Data karyawan berhasil diperbarui' }
     }
   } catch (error: any) {
