@@ -7,7 +7,18 @@ export default defineEventHandler(async (event) => {
     const session = requireAuth(event)
     const isProdi = session.role === 'prodi' && session.unit
     const u = session.unit?.trim()
-    const dFilter = isProdi ? ` AND TRIM(d.kode_program_studi) = '${u}'` : ''
+
+    // Determine sub-prodi codes for faculty-level stats
+    let subProdiCodes: string[] = []
+    if (isProdi && u) {
+      const prodis: any[] = await prisma.$queryRawUnsafe(`
+        SELECT kode_program_studi FROM mst_program_studi 
+        WHERE kode_program_studi = '${u}' OR kode_fakultas = '${u}'
+      `)
+      subProdiCodes = prodis.map(p => p.kode_program_studi)
+    }
+
+    const dFilter = subProdiCodes.length > 0 ? ` AND d.kode_program_studi IN (${subProdiCodes.map(c => `'${c}'`).join(',')})` : (isProdi ? ' AND 1=0' : '')
     // Tendik filter based on latest riwayat_jabatan
     const kFilter = isProdi ? ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND TRIM(rj.id_biro) = '${u}')` : ''
     

@@ -22,6 +22,21 @@ export default defineEventHandler(async (event) => {
       // --- DOSEN LOGIC ---
       let dbEdu = education
 
+      // Determine if the unit is a Faculty or a single Prodi
+      let subProdiCodes: string[] = []
+      if (isProdi && userUnit) {
+        const prodiList: any[] = await prisma.$queryRawUnsafe(`
+          SELECT kode_program_studi FROM mst_program_studi 
+          WHERE kode_program_studi = '${userUnit.trim()}' OR kode_fakultas = '${userUnit.trim()}'
+        `)
+        subProdiCodes = prodiList.map(p => p.kode_program_studi)
+      }
+
+      // If prodi admin but no matching prodi codes found (e.g. Biro), they should see no lecturers
+      if (isProdi && userUnit && subProdiCodes.length === 0) {
+        return { success: true, data: [] }
+      }
+
       let sql = `
         SELECT 
           d.nik, d.nuptk, d.nama_dosen as nama, d.tempat_lahir, 
@@ -44,8 +59,8 @@ export default defineEventHandler(async (event) => {
         WHERE d.nik NOT LIKE '0000%'
       `
       
-      if (isProdi && userUnit) {
-        sql += ` AND TRIM(d.kode_program_studi) = '${userUnit.trim()}'`
+      if (subProdiCodes.length > 0) {
+        sql += ` AND d.kode_program_studi IN (${subProdiCodes.map(c => `'${c}'`).join(',')})`
       } else if (biro_id) {
         sql += ` AND d.kode_program_studi = '${biro_id}'`
       }

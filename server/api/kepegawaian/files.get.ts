@@ -6,9 +6,19 @@ export default defineEventHandler(async (event) => {
   try {
     const user = requireAuth(event)
     const isProdi = user.role === 'prodi'
-    const unit = user.unit
+    const unit = user.unit?.trim()
+
+    // Determine sub-prodi codes for faculty-level file access
+    let subProdiCodes: string[] = []
+    if (isProdi && unit) {
+      const prodis: any[] = await prisma.$queryRawUnsafe(`
+        SELECT kode_program_studi FROM mst_program_studi 
+        WHERE kode_program_studi = '${unit}' OR kode_fakultas = '${unit}'
+      `)
+      subProdiCodes = prodis.map(p => p.kode_program_studi)
+    }
     
-    // Collecting ALL digital assets from ALL relevant tables for both Dosen and Tendik
+    // Collecting ALL digital assets
     let sql = `
       -- KTP & PROFILE
       SELECT upload_ktp as file_name, 'KTP' as category, nama_dosen as owner_name, 'KTP' as folder, kode_program_studi as unit_code
@@ -60,11 +70,15 @@ export default defineEventHandler(async (event) => {
     `
 
     if (isProdi && unit) {
-      sql = `SELECT * FROM (${sql}) AS all_files WHERE unit_code = '${unit}'`
+      // For Faculty, match unit_code in subProdiCodes. For Biro/Single prodi, match by unit or code
+      if (subProdiCodes.length > 0) {
+        sql = `SELECT * FROM (${sql}) AS all_files WHERE unit_code IN (${subProdiCodes.map(c => `'${c}'`).join(',')}) OR unit_code = '${unit}'`
+      } else {
+        sql = `SELECT * FROM (${sql}) AS all_files WHERE unit_code = '${unit}'`
+      }
     }
 
     sql += ` ORDER BY file_name DESC LIMIT 1000 `
-
     const files: any = await prisma.$queryRawUnsafe(sql)
 
     return { success: true, data: files }
