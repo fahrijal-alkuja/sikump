@@ -9,6 +9,8 @@ const emit = defineEmits(['refresh'])
 
 const isEditing = ref(false)
 const form = ref({ ...props.employee })
+const ktpFile = ref<HTMLInputElement | null>(null)
+const ppFile = ref<HTMLInputElement | null>(null)
 
 // Fetch References for Unit/Prodi
 const { data: biroData } = await useFetch<any>('/api/kepegawaian/biro')
@@ -62,13 +64,25 @@ const openPreview = (url: string, title: string) => {
 const handleUpdate = async () => {
   loading.value = true
   try {
+    const formData = new FormData()
+    // Append all form fields
+    Object.keys(form.value).forEach(key => {
+      const val = (form.value as any)[key]
+      if (val !== null && val !== undefined) {
+        formData.append(key, val)
+      }
+    })
+    
+    formData.append('type', props.employee.type || 'dosen')
+
+    // Append files if selected
+    if (ktpFile.value?.files?.[0]) formData.append('upload_ktp', ktpFile.value.files[0])
+    if (ppFile.value?.files?.[0]) formData.append('upload_foto', ppFile.value.files[0])
+
     // @ts-ignore
     const response = await $fetch<any>(`/api/kepegawaian/${props.employee.nik}`, {
       method: 'PUT',
-      body: {
-        ...form.value,
-        type: props.employee.type || 'dosen'
-      }
+      body: formData
     })
 
     if (response.success) {
@@ -80,6 +94,7 @@ const handleUpdate = async () => {
     }
   } catch (e) {
     console.error(e)
+    showAlert('Terjadi kesalahan saat mengunggah data', 'error')
   } finally {
     loading.value = false
   }
@@ -181,8 +196,16 @@ const handleUpdate = async () => {
           <input v-model="form.nama" type="text" class="glass-input" />
         </div>
         <div class="form-group">
+          <label>Ganti Foto Profil (Optional)</label>
+          <input type="file" ref="ppFile" class="glass-input" accept=".jpg,.jpeg,.png" />
+        </div>
+        <div class="form-group">
           <label>No. KTP</label>
           <input v-model="form.nomor_ktp" type="text" class="glass-input" />
+        </div>
+        <div class="form-group">
+          <label>Upload File KTP (Optional)</label>
+          <input type="file" ref="ktpFile" class="glass-input" accept=".jpg,.jpeg,.png,.pdf" />
         </div>
         <div class="form-group" v-if="employee.type === 'dosen'">
           <label>Program Studi</label>

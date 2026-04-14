@@ -1,39 +1,64 @@
-import { defineEventHandler, readBody, createError } from 'h3'
+import { defineEventHandler, readMultipartFormData, createError } from 'h3'
 import { requireAdmin } from '../../utils/auth'
 import { prisma } from '../../utils/prisma'
+import { writeFile } from 'fs/promises'
+import path from 'path'
 
 export default defineEventHandler(async (event) => {
   requireAdmin(event)
-  const body = await readBody(event)
+  const formData = await readMultipartFormData(event)
   
-  const { nik, nama, ikatan_kerja, nidn, nuptk, unit_id, jenis_kelamin, tempat_lahir, tanggal_lahir, telepon, pendidikan } = body
+  if (!formData) {
+    throw createError({ statusCode: 400, statusMessage: 'Data tidak lengkap' })
+  }
+
+  const fields: any = {}
+  let upload_ktp_name = null
+
+  // Process Multipart Data
+  for (const item of formData) {
+    if (item.name && item.data) {
+      if (item.filename && item.name === 'upload_ktp') {
+        const ext = path.extname(item.filename)
+        fields.nik = fields.nik || 'new' // fallback if nik not yet parsed
+        const fileName = `${Date.now()}${ext}` // wait until we have NIK for better name? or just timestamp
+        const storageRoot = '/www/wwwroot/sikump-storage'
+        
+        await writeFile(path.join(storageRoot, 'KTP', fileName), item.data)
+        upload_ktp_name = fileName
+      } else {
+        fields[item.name] = item.data.toString()
+      }
+    }
+  }
+
+  const { nik, nama, ikatan_kerja, nidn, nuptk, unit_id, jenis_kelamin, tempat_lahir, tanggal_lahir, telepon, pendidikan } = fields
 
   if (!nik || !nama) {
     throw createError({ statusCode: 400, statusMessage: 'NIK dan Nama wajib diisi' })
   }
 
+  // Rename file once we have NIK if needed, but timestamp is fine
+  const ktpFinalName = upload_ktp_name ? `${nik}_ktp_${upload_ktp_name}` : null
+  if (upload_ktp_name && ktpFinalName) {
+    const storageRoot = '/www/wwwroot/sikump-storage'
+    const fs = await import('fs/promises')
+    await fs.rename(path.join(storageRoot, 'KTP', upload_ktp_name), path.join(storageRoot, 'KTP', ktpFinalName))
+  }
+
   try {
     if (ikatan_kerja === '1') {
       await prisma.$executeRaw`
-        INSERT INTO tmst_dosen (nik, nama_dosen, nidn, nuptk, kode_program_studi, jenis_kelamin, tempat_lahir, tanggal_lahir, telepon, status_aktif, kode_jenjang_pendidikan)
-        VALUES (${nik}, ${nama}, ${nidn || ''}, ${nuptk || ''}, ${unit_id || ''}, ${jenis_kelamin || 'L'}, ${tempat_lahir || ''}, ${tanggal_lahir ? tanggal_lahir : null}, ${telepon || ''}, '1', ${pendidikan || null})
+        INSERT INTO tmst_dosen (nik, nama_dosen, nidn, nuptk, kode_program_studi, jenis_kelamin, tempat_lahir, tanggal_lahir, telepon, status_aktif, kode_jenjang_pendidikan, upload_ktp)
+        VALUES (${nik}, ${nama}, ${nidn || ''}, ${nuptk || ''}, ${unit_id || ''}, ${jenis_kelamin || 'L'}, ${tempat_lahir || ''}, ${tanggal_lahir ? tanggal_lahir : null}, ${telepon || ''}, '1', ${pendidikan || null}, ${ktpFinalName})
       `
       return { success: true, message: 'Dosen berhasil ditambahkan' }
     } else {
-      // @ts-ignore
-      await prisma.tmst_karyawan.create({
-        data: {
-          nik,
-          nama,
-          jenis_kelamin,
-          tempat_lahir,
-          tanggal_lahir: tanggal_lahir ? new Date(tanggal_lahir) : null,
-          telepon,
-          status_aktif: 'Y'
-        }
-      })
+      await prisma.$executeRaw`
+        INSERT INTO tmst_karyawan (nik, nama, jenis_kelamin, tempat_lahir, tanggal_lahir, telepon, status_aktif, upload_ktp)
+        VALUES (${nik}, ${nama}, ${jenis_kelamin || 'L'}, ${tempat_lahir || ''}, ${tanggal_lahir ? tanggal_lahir : null}, ${telepon || ''}, '1', ${ktpFinalName})
+      `
       
-      // If biro selected, add to riwayat_jabatan as the current one
       if (unit_id) {
         await prisma.$executeRaw`
           INSERT INTO riwayat_jabatan (nik, id_biro, is_aktiv, tmt)

@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close', 'success'])
 const loading = ref(false)
+const ktpFile = ref<HTMLInputElement | null>(null)
 
 const alert = ref({
   show: false,
@@ -73,9 +74,19 @@ const handleSubmit = async () => {
     const url = isEdit.value ? `/api/kepegawaian/${targetNik}` : '/api/kepegawaian'
     const method = isEdit.value ? 'PUT' : 'POST'
 
+    const formData = new FormData()
+    Object.keys(form.value).forEach(key => {
+      const val = (form.value as any)[key]
+      if (val !== null && val !== undefined) {
+        formData.append(key, val)
+      }
+    })
+    formData.append('type', props.type === '1' ? 'dosen' : 'tendik')
+    if (ktpFile.value?.files?.[0]) formData.append('upload_ktp', ktpFile.value.files[0])
+
     const response = await $fetch<any>(url, {
       method,
-      body: { ...form.value, type: props.type === '1' ? 'dosen' : 'tendik' }
+      body: formData
     })
     
     if (response.success) {
@@ -198,6 +209,10 @@ const parseLegacyDate = (dateStr: string) => {
               <div class="form-group">
                 <label>Tanggal Lahir</label>
                 <input v-model="form.tanggal_lahir" type="date" class="glass-input" />
+              </div>
+              <div class="form-group full">
+                <label>Upload KTP (Optional)</label>
+                <input type="file" ref="ktpFile" class="glass-input" accept=".jpg,.jpeg,.png,.pdf" />
               </div>
               <div class="form-group full">
                 <label>Alamat Lengkap</label>
