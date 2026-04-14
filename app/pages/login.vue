@@ -23,18 +23,17 @@ const handleLogin = async () => {
     })
     
     if (response.success) {
-      // Update state aplikasi secara instan agar middleware tidak menghadang
       user.value = response.user
-      success.value = 'Login berhasil! Membuka Dashboard...'
+      success.value = 'Akses Diterima. Membuka Dashboard...'
       
       setTimeout(() => {
         navigateTo('/kepegawaian')
-      }, 500)
+      }, 800)
     } else {
-      error.value = response.message || 'Login gagal. Cek kembali username & password.'
+      error.value = response.message || 'Otentikasi Gagal. Mohon periksa kembali data Anda.'
     }
   } catch (e: any) {
-    error.value = e.data?.message || 'Terjadi kesalahan sistem.'
+    error.value = e.data?.message || 'Gagal terhubung ke server.'
   } finally {
     loading.value = false
   }
@@ -42,258 +41,336 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="login-page">
-    <div class="login-visual">
-       <div class="glow-sphere"></div>
-       <div class="glow-sphere-2"></div>
+  <div class="login-wrapper">
+    <!-- Animated Background -->
+    <div class="bg-visual">
+      <img src="/Users/fahrijal/.gemini/antigravity/brain/20aed6d6-5bc4-4228-93ef-80f9c5150ee2/login_premium_bg_1776184898778.png" alt="Visual" class="bg-img" />
+      <div class="overlay-gradient"></div>
     </div>
     
-    <div class="login-container">
+    <main class="login-main">
       <div class="glass-card login-card">
-        <div class="logo-section">
-          <div class="logo-box">U</div>
-          <h1>SIKUMP<span>.next</span></h1>
-          <p>Sistem Informasi Kepegawaian & Manajemen Personalia</p>
-        </div>
+        <header class="card-header">
+          <div class="brand-visual">
+            <div class="brand-logo">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="brand-info">
+              <h1>SIKUMP<span>.unikarta</span></h1>
+              <p>Human Resource Command Center</p>
+            </div>
+          </div>
+        </header>
 
-        <form @submit.prevent="handleLogin" class="login-form">
-          <div v-if="error" class="error-alert">{{ error }}</div>
-          <div v-if="success" class="success-alert">{{ success }}</div>
-          
-          <div class="input-group">
-            <label>Username / Email</label>
-            <input 
-              v-model="username" 
-              type="text" 
-              placeholder="Masukkan username" 
-              required
-              class="glass-input"
-            />
+        <section class="form-section">
+          <div class="section-title">
+            <h2>Selamat Datang</h2>
+            <p>Sistem Informasi Kepegawaian & Manajemen Personalia</p>
           </div>
 
-          <div class="input-group">
-            <label>Password</label>
-            <input 
-              v-model="password" 
-              type="password" 
-              placeholder="••••••••" 
-              required
-              class="glass-input"
-            />
-          </div>
+          <form @submit.prevent="handleLogin" class="elegant-form">
+            <Transition name="fade">
+              <div v-if="error" class="alert error-alert">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                {{ error }}
+              </div>
+            </Transition>
+            
+            <Transition name="fade">
+              <div v-if="success" class="alert success-alert">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                {{ success }}
+              </div>
+            </Transition>
+            
+            <div class="input-field">
+              <label>Identitas Pengguna</label>
+              <div class="input-container">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <input v-model="username" type="text" placeholder="Username atau Email" required />
+              </div>
+            </div>
 
-          <button type="submit" :disabled="loading" class="btn-login">
-            <span v-if="!loading">Masuk Ke Sistem</span>
-            <span v-else class="loader"></span>
-          </button>
-        </form>
+            <div class="input-field">
+              <label>Kata Sandi</label>
+              <div class="input-container">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <input v-model="password" type="password" placeholder="••••••••" required />
+              </div>
+            </div>
 
-        <div class="login-footer">
-          <p>© 2026 UNIKARTA - Universitas Kutai Kartanegara</p>
-        </div>
+            <button type="submit" :disabled="loading" class="btn-submit">
+              <span v-if="!loading">Masuk ke Dashboard</span>
+              <div v-else class="loading-spinner"></div>
+            </button>
+          </form>
+        </section>
+
+        <footer class="card-footer">
+          <p>© 2026 UNIKARTA • Smart Campus Initiative</p>
+        </footer>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
-<style scoped>
-.login-page {
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+:root {
+  --primary-accent: #6366f1;
+  --primary-glow: rgba(99, 102, 241, 0.5);
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+.login-wrapper {
   min-height: 100vh;
-  display: flex;
-  background: #050a18;
+  background: #020617;
+  font-family: 'Outfit', sans-serif;
   color: white;
+  display: flex;
   overflow: hidden;
   position: relative;
 }
 
-.login-visual {
+.bg-visual {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 1;
 }
 
-.glow-sphere {
-  position: absolute;
-  top: -10%;
-  right: -5%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-  filter: blur(80px);
+.bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  filter: brightness(0.8);
 }
 
-.glow-sphere-2 {
+.overlay-gradient {
   position: absolute;
-  bottom: -15%;
-  left: -10%;
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
-  filter: blur(100px);
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 0%, #020617 100%);
 }
 
-.login-container {
+.login-main {
   flex: 1;
+  position: relative;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  z-index: 10;
   padding: 2rem;
 }
 
 .login-card {
   width: 100%;
-  max-width: 450px;
+  max-width: 480px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 32px;
   padding: 3rem;
-  border-radius: 2rem;
-  animation: slideUp 0.6s ease-out;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes cardEntrance {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); filter: blur(10px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
-.logo-section {
-  text-align: center;
-  margin-bottom: 3rem;
+.card-header {
+  margin-bottom: 2.5rem;
 }
 
-.logo-box {
-  width: 50px;
-  height: 50px;
-  background: var(--primary);
-  color: white;
-  display: inline-flex;
+.brand-visual {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-logo {
+  width: 48px;
+  height: 48px;
+  background: var(--primary-accent);
+  border-radius: 14px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 800;
-  border-radius: 12px;
-  margin-bottom: 1rem;
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 20px var(--primary-glow);
 }
 
-.logo-section h1 {
-  font-size: 1.75rem;
+.brand-info h1 {
+  font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: -1px;
   margin: 0;
 }
 
-.logo-section h1 span {
-  color: var(--primary);
+.brand-info h1 span {
+  color: var(--primary-accent);
 }
 
-.logo-section p {
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  margin-top: 0.5rem;
+.brand-info p {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 2px;
 }
 
-.login-form {
+.section-title h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.section-title p {
+  color: #94a3b8;
+  font-size: 0.9375rem;
+  margin-bottom: 2.5rem;
+}
+
+.elegant-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.input-group label {
+.alert {
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-muted);
-  padding-left: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.glass-input {
+.error-alert {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.success-alert {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #a7f3d0;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.input-field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #94a3b8;
+  padding-left: 0.5rem;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1.25rem;
+  width: 20px;
+  height: 20px;
+  color: #64748b;
+  pointer-events: none;
+  transition: color 0.3s;
+}
+
+.input-container input {
   width: 100%;
-  padding: 1rem 1.25rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
+  padding: 1.125rem 1.25rem 1.125rem 3.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
   color: white;
   font-size: 1rem;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.glass-input:focus {
+.input-container input:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
 }
 
-.btn-login {
+.input-container input:focus + .input-icon {
+  color: var(--primary-accent);
+}
+
+.btn-submit {
   margin-top: 1rem;
-  padding: 1rem;
-  background: var(--primary);
+  padding: 1.125rem;
+  background: var(--primary-accent);
   border: none;
-  border-radius: 1rem;
+  border-radius: 18px;
   color: white;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 10px 25px -5px var(--primary-glow);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.btn-login:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+.btn-submit:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -10px var(--primary-glow);
 }
 
-.btn-login:disabled {
-  opacity: 0.7;
+.btn-submit:active {
+  transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  filter: grayscale(0.5);
   cursor: not-allowed;
   transform: none;
 }
 
-.error-alert {
-  padding: 1rem;
-  background: rgba(239, 68, 68, 0.15);
-  border-left: 4px solid #ef4444;
-  color: #fca5a5;
-  font-size: 0.875rem;
-  border-radius: 0.5rem;
-}
-
-.success-alert {
-  padding: 1rem;
-  background: rgba(16, 185, 129, 0.15);
-  border-left: 4px solid #10b981;
-  color: #a7f3d0;
-  font-size: 0.875rem;
-  border-radius: 0.5rem;
-}
-
-.login-footer {
+.card-footer {
   margin-top: 3rem;
   text-align: center;
-  color: var(--text-muted);
-  font-size: 0.75rem;
+  color: #475569;
+  font-size: 0.8125rem;
+  font-weight: 500;
 }
 
-.loader {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
+  border-top-color: white;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.fade-enter-active, .fade-leave-active { transition: all 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-10px); }
 </style>
