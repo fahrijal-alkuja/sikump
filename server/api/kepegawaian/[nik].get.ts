@@ -107,17 +107,27 @@ export default defineEventHandler(async (event) => {
     // --- Role-Based Security Check ---
     const session = requireAuth(event)
     if (session.role === 'prodi' && session.unit) {
+      const u = session.unit.trim()
+      
       if (data.type === 'dosen') {
-        if (data.kode_program_studi !== session.unit) {
-          throw createError({ statusCode: 403, statusMessage: 'Forbidden: Unit mismatch' })
+        const dUnit = (data.kode_program_studi || '').trim()
+        // Check if it's the same prodi OR if the prodi belongs to the faculty
+        const isValid: any[] = await prisma.$queryRawUnsafe(`
+          SELECT 1 FROM mst_program_studi 
+          WHERE (kode_program_studi = '${dUnit}' AND (kode_program_studi = '${u}' OR kode_fakultas = '${u}'))
+        `)
+        
+        if (isValid.length === 0) {
+          throw createError({ statusCode: 403, statusMessage: 'Forbidden: Unit mismatch (Dosen)' })
         }
       } else {
         // For Tendik, check latest biro ID
-        const check: any = await prisma.$queryRaw`
-          SELECT id_biro FROM riwayat_jabatan WHERE nik = ${nik} ORDER BY id DESC LIMIT 1
-        `
-        if (check[0]?.id_biro !== session.unit) {
-          throw createError({ statusCode: 403, statusMessage: 'Forbidden: Unit mismatch' })
+        const check: any = await prisma.$queryRawUnsafe(`
+          SELECT id_biro FROM riwayat_jabatan WHERE nik = '${nik}' ORDER BY id DESC LIMIT 1
+        `)
+        const userBiro = (check[0]?.id_biro || '').trim()
+        if (userBiro !== u) {
+          throw createError({ statusCode: 403, statusMessage: 'Forbidden: Unit mismatch (Tendik)' })
         }
       }
     }
