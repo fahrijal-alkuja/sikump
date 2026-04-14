@@ -123,7 +123,12 @@ const handleUpdate = async () => {
         <span>{{ employee.nuptk }}</span>
       </div>
       <div class="info-item">
-        <label>No. KTP</label>
+        <label>
+          No. KTP
+          <button v-if="employee.upload_ktp" @click="openPreview(`/assets/KTP/${employee.upload_ktp}`, 'Dokumen KTP')" class="btn-view-ktp">
+            (Lihat Dokumen)
+          </button>
+        </label>
         <span>{{ employee.nomor_ktp || '-' }}</span>
       </div>
       <div class="info-item">
@@ -421,4 +426,21 @@ const handleUpdate = async () => {
 .status-3 { background: rgba(167, 139, 250, 0.1); color: #a78bfa; }
 .status-4, .status-5 { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 .text-danger { color: #ef4444; font-weight: 700; }
+.btn-view-ktp {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.65rem;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+.btn-view-ktp:hover {
+  color: #1e293b;
+  text-decoration: underline;
+}
 </style>
