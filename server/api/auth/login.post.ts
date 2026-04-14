@@ -1,7 +1,7 @@
 import { defineEventHandler, readBody, createError } from 'h3'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../utils/prisma'
-import { setSession } from '../../utils/session'
+import { setAuthSession } from '../../utils/session'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -73,7 +73,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 5. Set Secure Session Cookie
-    setSession(event, sessionData)
+    setAuthSession(event, sessionData)
 
     return {
       success: true,

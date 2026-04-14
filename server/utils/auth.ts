@@ -1,5 +1,5 @@
 import { createError, H3Event } from 'h3'
-import { getSession } from './session'
+import { getAuthSession } from './session'
 
 export interface UserSession {
   id: number
@@ -11,7 +11,7 @@ export interface UserSession {
 }
 
 export const useServerSession = (event: H3Event): UserSession | null => {
-  return getSession(event)
+  return getAuthSession(event)
 }
 
 export const requireAuth = (event: H3Event) => {

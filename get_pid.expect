@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set timeout 30
+set host "31.97.106.132"
+set user "root"
+set password "alkuja07"
+
+spawn ssh -o StrictHostKeyChecking=no $user@$host "cat /www/server/nodejs/vhost/pids/sikump.pid"
+expect {
+    "Enter passphrase for key" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}

@@ -28,13 +28,13 @@ export const verifySession = (token: string): any | null => {
   }
 }
 
-export const getSession = (event: H3Event) => {
+export const getAuthSession = (event: H3Event) => {
   const token = getCookie(event, 'auth_session')
   if (!token) return null
   return verifySession(token)
 }
 
-export const setSession = (event: H3Event, data: any) => {
+export const setAuthSession = (event: H3Event, data: any) => {
   const signedToken = signSession(data)
   setCookie(event, 'auth_session', signedToken, {
     httpOnly: true,
@@ -45,6 +45,6 @@ export const setSession = (event: H3Event, data: any) => {
   })
 }
 
-export const clearSession = (event: H3Event) => {
+export const clearAuthSession = (event: H3Event) => {
   deleteCookie(event, 'auth_session')
 }
