@@ -9,20 +9,27 @@ const props = defineProps<{
 // @ts-ignore
 const { data: biroStore } = await useFetch<any>('/api/kepegawaian/biro')
 const { data: prodiStore } = await useFetch<any>('/api/kepegawaian/prodi')
+const { data: eduStore } = await useFetch<any>('/api/kepegawaian/riwayat/pendidikan/levels')
 
 const biroData = computed(() => biroStore.value?.data || [])
 const prodiData = computed(() => prodiStore.value?.data || [])
+const eduLevels = computed(() => eduStore.value?.data || [])
 
 const getBiroName = (id: string | number) => {
   if (!id) return '-'
+  const searchId = String(id).trim()
   
   // Try Biro first
-  const b = biroData.value.find((x: any) => x.id_biro == id)
-  if (b) return b.nama_biro
+  if (biroData.value && biroData.value.length > 0) {
+    const b = biroData.value.find((x: any) => String(x.id_biro).trim() === searchId)
+    if (b) return b.nama_biro
+  }
   
   // Try Prodi next
-  const p = prodiData.value.find((x: any) => x.kode_program_studi == id)
-  if (p) return p.nama_program_studi
+  if (prodiData.value && prodiData.value.length > 0) {
+    const p = prodiData.value.find((x: any) => String(x.kode_program_studi).trim() === searchId)
+    if (p) return p.nama_program_studi
+  }
 
   return id
 }
@@ -45,13 +52,19 @@ const timelineEvents = computed(() => {
   
   // 1. Pendidikan
   props.employee.riwayat_pendidikan?.forEach((edu: any) => {
-    const level = String(edu.id_pendidikan)
+    const levelId = String(edu.id_pendidikan).trim()
+    const levelObj = eduLevels.value.find((l: any) => String(l.id).trim() === levelId)
+    const levelName = levelObj ? levelObj.nama_jenjang : 'Pendidikan'
+    
+    // Icon logic: School for SD/SMP/SMA, Cap for others
+    const isSchool = ['1','2','3','8','9','10'].includes(levelId)
+    
     events.push({
       date: edu.tahun_lulus || '-',
-      title: `Lulus ${level === '6' ? 'S3' : level === '5' ? 'S2' : 'S1'}`,
+      title: `Lulus ${levelName}`,
       description: edu.asal_pendidikan,
       type: 'edu',
-      icon: '🎓'
+      icon: isSchool ? '🏫' : '🎓'
     })
   })
 
