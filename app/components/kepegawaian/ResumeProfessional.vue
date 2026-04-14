@@ -1,26 +1,139 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const props = defineProps<{
   employee: any
 }>()
 
-const isMounted = ref(false)
-onMounted(() => {
-  isMounted.value = true
-})
+const handleExportPDF = () => {
+  const doc = new jsPDF('p', 'mm', 'a4')
+  const e = props.employee
+  const pageWidth = doc.internal.pageSize.getWidth()
 
-const handlePrint = () => {
-  window.print()
+  // --- HEADER & LOGO ---
+  doc.setFillColor(248, 250, 252)
+  doc.rect(0, 0, pageWidth, 45, 'F')
+  
+  doc.setFontSize(20)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(30, 41, 59)
+  doc.text('UNIVERSITAS KUTAI KARTANEGARA', 15, 20)
+  
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(100, 116, 139)
+  doc.text('Sistem Informasi Kepegawaian & Manajemen Personalia', 15, 26)
+  
+  doc.setFontSize(14)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(148, 163, 184)
+  doc.text('CURRICULUM VITAE', pageWidth - 15, 20, { align: 'right' })
+
+  // --- BIO SECTION ---
+  doc.setDrawColor(226, 232, 240)
+  doc.line(15, 45, pageWidth - 15, 45)
+  
+  // Foto Placeholder logic or Real Image if possible
+  doc.setFillColor(241, 245, 249)
+  doc.rect(15, 55, 35, 45, 'F')
+  doc.setFontSize(25)
+  doc.setTextColor(203, 213, 225)
+  doc.text(e.nama?.charAt(0) || 'U', 32, 82, { align: 'center' })
+
+  doc.setTextColor(30, 41, 59)
+  doc.setFontSize(14)
+  doc.setFont('helvetica', 'bold')
+  doc.text(e.nama?.toUpperCase() || '-', 60, 62)
+  
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'normal')
+  doc.setTextColor(100, 116, 139)
+  doc.text(`NIK: ${e.nik || '-'}`, 60, 68)
+  doc.text(`Unit: ${e.unit || '-'}`, 60, 73)
+  
+  // Bio Table
+  const bioData = [
+    ['Tempat, Tgl Lahir', `: ${e.tempat_lahir || '-'}, ${e.tanggal_lahir || '-'}`],
+    ['Jenis Kelamin', `: ${e.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'}`],
+    ['Telepon', `: ${e.telepon || '-'}`],
+    ['Alamat', `: ${e.alamat || '-'}`]
+  ]
+
+  autoTable(doc, {
+    body: bioData,
+    startY: 78,
+    margin: { left: 58 },
+    theme: 'plain',
+    styles: { fontSize: 9, cellPadding: 1, textColor: [30, 41, 59] },
+    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 35 } }
+  })
+
+  // --- TABLES SECTIONS ---
+  
+  // 1. Pendidikan
+  doc.setFontSize(11)
+  doc.setFont('helvetica', 'bold')
+  doc.text('RIWAYAT PENDIDIKAN', 15, 115)
+  doc.line(15, 117, 60, 117)
+
+  const eduRows = (e.riwayat_pendidikan || []).map((edu: any) => [
+    edu.id_pendidikan === 4 ? 'S1' : edu.id_pendidikan === 5 ? 'S2' : edu.id_pendidikan === 6 ? 'S3' : 'Diploma/Lainnya',
+    edu.asal_pendidikan,
+    edu.tahun_lulus
+  ])
+
+  autoTable(doc, {
+    head: [['JENJANG', 'INSTITUSI', 'LULUS']],
+    body: eduRows.length ? eduRows : [['-', 'Data tidak tersedia', '-']],
+    startY: 122,
+    theme: 'striped',
+    headStyles: { fillColor: [71, 85, 105] },
+    styles: { fontSize: 8.5 }
+  })
+
+  // 2. Jabatan
+  const nextY = (doc as any).lastAutoTable.finalY + 15
+  doc.setFontSize(11)
+  doc.setFont('helvetica', 'bold')
+  doc.text('RIWAYAT JABATAN & FUNGSIONAL', 15, nextY)
+  doc.line(15, nextY + 2, 85, nextY + 2)
+
+  const jobRows = (e.riwayat_jabatan || []).map((j: any) => [
+    j.no_sk || '-',
+    j.tmt || '-',
+    `${j.ikatan_kerja || '-'} (${j.is_aktiv === 'Y' ? 'Aktif' : 'Non-aktif'})`
+  ])
+
+  autoTable(doc, {
+    head: [['NO. SK', 'TMT', 'KETERANGAN']],
+    body: jobRows.length ? jobRows : [['-', '-', 'Data tidak tersedia']],
+    startY: nextY + 6,
+    theme: 'grid',
+    headStyles: { fillColor: [30, 41, 59] },
+    styles: { fontSize: 8.5 }
+  })
+
+  // --- FOOTER ---
+  const finalY = (doc as any).lastAutoTable.finalY + 30
+  doc.setFontSize(9)
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Dicetak secara sistem pada: ${new Date().toLocaleString('id-ID')}`, 15, finalY)
+  
+  doc.text('Petugas Administrasi,', pageWidth - 60, finalY)
+  doc.text('____________________', pageWidth - 60, finalY + 25)
+
+  doc.save(`CV_${e.nama?.replace(/ /g, '_')}.pdf`)
 }
 </script>
 
 <template>
   <div class="resume-container">
     <div class="resume-actions no-print">
-      <button @click="handlePrint" class="btn-print">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-        Cetak Resume Resume
+      <button @click="handleExportPDF" class="btn-print">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Ekspor Resume (PDF)
       </button>
     </div>
 
