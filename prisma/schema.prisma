@@ -292,6 +292,7 @@ model tmst_pangkat {
   tmt         String?   @db.VarChar(255)
   upload_sk   String?   @db.VarChar(255)
   last_update DateTime? @db.Timestamp(0)
+  karyawan    tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model tmst_sertifikasi {
@@ -304,6 +305,7 @@ model tmst_sertifikasi {
   tahun                 String?   @db.VarChar(255)
   upload_sk_sertifikasi String?   @db.VarChar(255)
   last_update           DateTime? @db.Timestamp(0)
+  karyawan              tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model tmst_skpns {
