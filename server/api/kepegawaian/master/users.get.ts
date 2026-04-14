@@ -15,7 +15,12 @@ export default defineEventHandler(async (event) => {
       ORDER BY u.id DESC
     `)
 
-    return { success: true, data: users }
+    // Convert BigInt to Number for JSON serialization
+    const serializedUsers = JSON.parse(JSON.stringify(users, (key, value) =>
+      typeof value === 'bigint' ? Number(value) : value
+    ))
+
+    return { success: true, data: serializedUsers }
   } catch (error: any) {
     return { success: false, message: error.message }
   }
