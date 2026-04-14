@@ -10,12 +10,12 @@ export default defineEventHandler(async (event) => {
     const bulan = (query.bulan as string) || new Date().toISOString().slice(0, 7) // Format: YYYY-MM
 
     // 1. Get Token from Attendance API
-    const authUrl = 'https://api-absen.unikarta.ac.id/auth'
+    const authUrl = `${process.env.ABSEN_API_URL}/auth`
     const loginResponse = await $fetch<any>(authUrl, {
       method: 'POST',
       body: {
-        email: 'rizal.alkuja@gmail.com',
-        password: 'alkuja07'
+        email: process.env.ABSEN_API_EMAIL || 'rizal.alkuja@gmail.com',
+        password: process.env.ABSEN_API_PASSWORD || 'alkuja07'
       }
     })
 
@@ -25,12 +25,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // 2. Fetch All Absen Users (for mapping NIK to UserId)
-    const absenUsers = await $fetch<any[]>('https://api-absen.unikarta.ac.id/users', {
+    const absenUsers = await $fetch<any[]>(`${process.env.ABSEN_API_URL}/users`, {
       headers: { Authorization: `Bearer ${token}` }
     })
 
     // 3. Fetch Absence Logs for the month
-    const absenLogs = await $fetch<any[]>(`https://api-absen.unikarta.ac.id/absens/byBulan/${bulan}`, {
+    const absenLogs = await $fetch<any[]>(`${process.env.ABSEN_API_URL}/absens/byBulan/${bulan}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
 

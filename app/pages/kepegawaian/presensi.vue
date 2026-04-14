@@ -2,9 +2,7 @@
 import { ref, computed } from 'vue'
 
 definePageMeta({
-  layout: 'default',
-  // @ts-ignore
-  middleware: 'admin'
+  layout: 'default'
 })
 
 const now = new Date()
