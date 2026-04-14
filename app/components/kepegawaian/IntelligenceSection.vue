@@ -33,10 +33,11 @@ const timelineEvents = computed(() => {
   
   // 1. Pendidikan
   props.employee.riwayat_pendidikan?.forEach((edu: any) => {
+    const level = String(edu.id_pendidikan)
     events.push({
       date: edu.tahun_lulus || '-',
-      title: `Lulus ${edu.id_pendidikan === '6' ? 'S3' : edu.id_pendidikan === '5' ? 'S2' : 'S1'}`,
-      description: edu.institusi,
+      title: `Lulus ${level === '6' ? 'S3' : level === '5' ? 'S2' : 'S1'}`,
+      description: edu.asal_pendidikan,
       type: 'edu',
       icon: '🎓'
     })
