@@ -6,9 +6,10 @@ export default defineEventHandler(async (event) => {
   try {
     const session = requireAuth(event)
     const isProdi = session.role === 'prodi' && session.unit
-    const dFilter = isProdi ? ` AND d.kode_program_studi = '${session.unit}'` : ''
+    const u = session.unit?.trim()
+    const dFilter = isProdi ? ` AND TRIM(d.kode_program_studi) = '${u}'` : ''
     // Tendik filter based on latest riwayat_jabatan
-    const kFilter = isProdi ? ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND rj.id_biro = '${session.unit}')` : ''
+    const kFilter = isProdi ? ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND TRIM(rj.id_biro) = '${u}')` : ''
     
     const runQuery = async (query: string) => {
       try { return await prisma.$queryRawUnsafe(query) } catch (e) { return [] }

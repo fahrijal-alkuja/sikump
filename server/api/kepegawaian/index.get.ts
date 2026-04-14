@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
       `
       
       if (isProdi && userUnit) {
-        sql += ` AND d.kode_program_studi = '${userUnit}'`
+        sql += ` AND TRIM(d.kode_program_studi) = '${userUnit.trim()}'`
       } else if (biro_id) {
         sql += ` AND d.kode_program_studi = '${biro_id}'`
       }
@@ -111,7 +111,7 @@ export default defineEventHandler(async (event) => {
       `
       
       if (isProdi && userUnit) {
-        sql += ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND rj.id_biro = '${userUnit}')`
+        sql += ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND TRIM(rj.id_biro) = '${userUnit.trim()}')`
       } else if (biro_id) {
         sql += ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND rj.id_biro = '${biro_id}')`
       }
