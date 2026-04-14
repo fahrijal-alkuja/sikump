@@ -56,6 +56,9 @@ export default defineEventHandler(async (event) => {
     absenUsers.forEach((u: any) => {
       if (u.profile?.nik) {
         const cleanNik = String(u.profile.nik).replace(/\s+/g, '')
+        if (cleanNik === '991020912080786') {
+          console.log('DEBUG FAHRIJAL:', { id: u._id, email: u.email, name: u.profile.name })
+        }
         nikToUserIdMap[cleanNik] = u._id
       }
     })
@@ -64,6 +67,12 @@ export default defineEventHandler(async (event) => {
     absenLogs.forEach((log: any) => {
       const uId = log.userId
       if (!uId) return
+      
+      const isFahrijal = uId === '624ab37385c618c486d5e416' || uId === nikToUserIdMap['991020912080786']
+      if (isFahrijal && (log.pulang || log.statusOut === '1')) {
+         console.log('FAHRIJAL LOG FOUND:', log.tanggal, log.masuk, log.pulang)
+      }
+
       if (!logMap[uId]) logMap[uId] = { count: 0, lates: 0 }
       
       // Count presence ONLY if they have a checkout time (pulang/statusOut)
