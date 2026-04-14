@@ -47,10 +47,10 @@ export default defineEventHandler(async (event) => {
       UNION ALL
 
       -- ACADEMIC POSITION (JAFUNG)
-      SELECT upload_sk as file_name, 'SK Jafung' as category, m.nama_dosen as owner_name, 'SK' as folder 
-      FROM riwayat_jafung r 
+      SELECT file_upload as file_name, 'SK Jafung' as category, m.nama_dosen as owner_name, 'SK' as folder 
+      FROM tmst_jafung r 
       JOIN tmst_dosen m ON r.nik = m.nik 
-      WHERE upload_sk != '' AND upload_sk IS NOT NULL
+      WHERE file_upload != '' AND file_upload IS NOT NULL
 
       UNION ALL
 
