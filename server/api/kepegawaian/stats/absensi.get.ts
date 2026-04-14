@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
     requireAdmin(event)
 
     const query = getQuery(event)
-    const bulan = (query.bulan as string) || new Date().toISOString().slice(0, 7) // Format: YYYY-MM
+    const bulan = (query.bulan as string) || new Date().toISOString().slice(0, 7)
 
     // 1. Get Token from Attendance API
     const authUrl = `${process.env.ABSEN_API_URL}/auth`
@@ -24,82 +24,54 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, message: "Koneksi ke sistem absensi gagal (Auth Error)" })
     }
 
-    // 2. Fetch All Absen Users (for mapping NIK to UserId)
-    const absenUsers = await $fetch<any[]>(`${process.env.ABSEN_API_URL}/users`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    // 3. Fetch Absence Logs for the month
-    const absenLogs = await $fetch<any[]>(`${process.env.ABSEN_API_URL}/absens/byBulan/${bulan}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    // 4. Get All Personnel from SIKUMP (Tendik only)
-    const [tendikSikump, biroList, prodiList] = await Promise.all([
-      prisma.tmst_karyawan.findMany({
-        include: {
-          riwayat_jabatan: {
-            where: { is_aktiv: 'Y' }
-          }
-        }
-      }),
-      prisma.tmst_biro.findMany(),
-      prisma.mst_program_studi.findMany()
+    // 2. Fetch All Absen Data
+    const [absenUsers, absenLogs] = await Promise.all([
+      $fetch<any[]>(`${process.env.ABSEN_API_URL}/users`, { headers: { Authorization: `Bearer ${token}` } }),
+      $fetch<any[]>(`${process.env.ABSEN_API_URL}/absens/byBulan/${bulan}`, { headers: { Authorization: `Bearer ${token}` } })
     ])
 
-    // Create a robust map for unit names (mapping both ID and String Code)
-    const unitMap: Record<string, string> = {}
-    biroList.forEach(b => {
-      if (b.id_biro) unitMap[b.id_biro] = b.nama_biro
-      unitMap[String(b.id)] = b.nama_biro
-    })
-    prodiList.forEach(p => {
-      // Map prodi by its code or name if found
-      if (p.nama_program_studi) {
-         // @ts-ignore
-         unitMap[p.kode_program_studi || ''] = p.nama_program_studi
-      }
-    })
+    // 3. Get All Tendik with their LATEST Unit using RAW SQL (SIKUMP Standard)
+    const tendikSikump: any[] = await prisma.$queryRawUnsafe(`
+      SELECT 
+        k.nik, k.nama,
+        (SELECT b.nama_biro 
+         FROM riwayat_jabatan rj 
+         JOIN tmst_biro b ON rj.id_biro = b.id_biro 
+         WHERE rj.nik = k.nik 
+         ORDER BY rj.id DESC 
+         LIMIT 1) as unit,
+        (SELECT tj.nama_jabatan 
+         FROM riwayat_jabatan rj2 
+         JOIN tref_jabatan tj ON rj2.id_jabatan = tj.id_jabatan 
+         WHERE rj2.nik = k.nik 
+         ORDER BY rj2.id DESC 
+         LIMIT 1) as jabatan
+      FROM tmst_karyawan k
+      WHERE k.nik NOT IN (SELECT nik FROM tmst_dosen)
+      AND k.nik NOT LIKE '0000%'
+    `)
 
-    // Filter out Dosen
-    const dosenNiks = (await prisma.tmst_dosen.findMany({ select: { nik: true } })).map(d => d.nik)
-    const pureTendik = tendikSikump.filter(t => !dosenNiks.includes(t.nik))
-
-    // 5. Map and Aggregate Data
+    // 4. Map Attendance Data
     const nikToUserIdMap: Record<string, string> = {}
     absenUsers.forEach((u: any) => {
-      if (u.profile?.nik) {
-        nikToUserIdMap[u.profile.nik] = u._id
-      }
+      if (u.profile?.nik) nikToUserIdMap[u.profile.nik] = u._id
     })
 
     const logMap: Record<string, { count: number, lates: number }> = {}
     absenLogs.forEach((log: any) => {
       const uId = log.userId
       if (!uId) return
-      
-      if (!logMap[uId]) {
-        logMap[uId] = { count: 0, lates: 0 }
-      }
-      
-      const entry = logMap[uId]!
+      if (!logMap[uId]) logMap[uId] = { count: 0, lates: 0 }
       if (log.statusOut === '1') {
-         entry.count++
+         logMap[uId].count++
          if (log.keteranganIn === 'Telat') {
-           entry.lates++
+           logMap[uId].lates++
          }
       }
     })
 
-    const jabList = await prisma.tref_jabatan.findMany()
-    const jabMap: Record<string, string> = {}
-    jabList.forEach(j => {
-      const name = j.nama_jabatan || 'Unknown'
-      jabMap[String(j.id_jabatan)] = name
-    })
-
-    // Final Assembly
-    const result = pureTendik.map(t => {
+    // 5. Final Assembly
+    const result = tendikSikump.map(t => {
       const uId = nikToUserIdMap[t.nik]
       const logs = (uId ? logMap[uId] : null) || { count: 0, lates: 0 }
       
@@ -107,18 +79,11 @@ export default defineEventHandler(async (event) => {
       const presenceRate = Math.min((logs.count / workingDays) * 100, 100)
       const disciplineScore = Math.max(presenceRate - (logs.lates * 2), 0)
 
-      const activeJabatan = t.riwayat_jabatan?.[0]
-      const idBiro = activeJabatan?.id_biro || ''
-      
-      // Try to find the jabatan name from the reference table
-      const rawJabatan = activeJabatan?.id_jabatan || ''
-      const namaJabatan = jabMap[rawJabatan] || rawJabatan || '-'
-
       return {
         nik: t.nik,
         nama: t.nama || 'Tanpa Nama',
-        biro: unitMap[idBiro] || 'Tanpa Unit',
-        jabatan: namaJabatan,
+        biro: t.unit || 'Kantor Pusat', // Fallback matches primary API
+        jabatan: t.jabatan || '-',
         hadir: logs.count,
         telat: logs.lates,
         score: Number(disciplineScore.toFixed(1)),
