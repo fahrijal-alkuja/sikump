@@ -126,9 +126,21 @@ export default defineEventHandler(async (event) => {
       `
       
       if (isProdi && userUnit) {
-        sql += ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND TRIM(rj.id_biro) = '${userUnit.trim()}')`
+        sql += ` 
+          AND k.nik IN (
+            SELECT TRIM(rj.nik) 
+            FROM riwayat_jabatan rj 
+            WHERE TRIM(rj.id_biro) = '${userUnit.trim()}'
+          )
+        `
       } else if (biro_id) {
-        sql += ` AND EXISTS (SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND rj.id_biro = '${biro_id}')`
+        sql += ` 
+          AND k.nik IN (
+            SELECT TRIM(rj.nik) 
+            FROM riwayat_jabatan rj 
+            WHERE TRIM(rj.id_biro) = '${biro_id}'
+          )
+        `
       }
 
       if (education) {

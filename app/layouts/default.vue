@@ -74,9 +74,14 @@ const handleLogout = async () => {
                   Jabatan Struktural
                 </NuxtLink>
                 <div class="dropdown-divider"></div>
-                <NuxtLink to="/kepegawaian/logs" class="drop-link">
+                <NuxtLink to="/kepegawaian/logs" class="drop-link text-red-500">
                   <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                   Log Aktivitas
+                </NuxtLink>
+                <div class="dropdown-divider"></div>
+                <NuxtLink to="/kepegawaian/master/users" class="drop-link text-indigo-600">
+                  <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                  Manajemen User
                 </NuxtLink>
               </div>
             </div>
