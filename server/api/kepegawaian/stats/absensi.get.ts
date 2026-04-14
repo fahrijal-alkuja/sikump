@@ -51,10 +51,13 @@ export default defineEventHandler(async (event) => {
       AND k.nik NOT LIKE '0000%'
     `)
 
-    // 4. Map Attendance Data
+    // 4. Map Attendance Data (Normalize NIK by removing spaces)
     const nikToUserIdMap: Record<string, string> = {}
     absenUsers.forEach((u: any) => {
-      if (u.profile?.nik) nikToUserIdMap[u.profile.nik] = u._id
+      if (u.profile?.nik) {
+        const cleanNik = String(u.profile.nik).replace(/\s+/g, '')
+        nikToUserIdMap[cleanNik] = u._id
+      }
     })
 
     const logMap: Record<string, { count: number, lates: number }> = {}
@@ -87,7 +90,8 @@ export default defineEventHandler(async (event) => {
 
     // Final Assembly
     const result = tendikSikump.map(t => {
-      const uId = nikToUserIdMap[t.nik]
+      const cleanNik = String(t.nik || '').replace(/\s+/g, '')
+      const uId = nikToUserIdMap[cleanNik]
       const logs = (uId ? logMap[uId] : null) || { count: 0, lates: 0 }
       
       const presenceRate = Math.min((logs.count / effectiveWorkingDays) * 100, 100)
