@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     })
 
     // 4. Get All Personnel from SIKUMP (Tendik only)
-    const [tendikSikump, biroList] = await Promise.all([
+    const [tendikSikump, biroList, prodiList] = await Promise.all([
       prisma.tmst_karyawan.findMany({
         include: {
           riwayat_jabatan: {
@@ -43,13 +43,22 @@ export default defineEventHandler(async (event) => {
           }
         }
       }),
-      prisma.tmst_biro.findMany()
+      prisma.tmst_biro.findMany(),
+      prisma.mst_program_studi.findMany()
     ])
 
-    // Create a map for biro names for easy lookup
-    const biroMap: Record<string, string> = {}
+    // Create a robust map for unit names (mapping both ID and String Code)
+    const unitMap: Record<string, string> = {}
     biroList.forEach(b => {
-      if (b.id_biro) biroMap[b.id_biro] = b.nama_biro
+      if (b.id_biro) unitMap[b.id_biro] = b.nama_biro
+      unitMap[String(b.id)] = b.nama_biro
+    })
+    prodiList.forEach(p => {
+      // Map prodi by its code or name if found
+      if (p.nama_program_studi) {
+         // @ts-ignore
+         unitMap[p.kode_program_studi || ''] = p.nama_program_studi
+      }
     })
 
     // Filter out Dosen
@@ -82,6 +91,13 @@ export default defineEventHandler(async (event) => {
       }
     })
 
+    const jabList = await prisma.tref_jabatan.findMany()
+    const jabMap: Record<string, string> = {}
+    jabList.forEach(j => {
+      jabMap[String(j.id)] = j.nama_jabatan
+      if (j.id_jabatan) jabMap[j.id_jabatan] = j.nama_jabatan
+    })
+
     // Final Assembly
     const result = pureTendik.map(t => {
       const uId = nikToUserIdMap[t.nik]
@@ -91,13 +107,18 @@ export default defineEventHandler(async (event) => {
       const presenceRate = Math.min((logs.count / workingDays) * 100, 100)
       const disciplineScore = Math.max(presenceRate - (logs.lates * 2), 0)
 
-      const idBiro = t.riwayat_jabatan?.[0]?.id_biro || ''
+      const activeJabatan = t.riwayat_jabatan?.[0]
+      const idBiro = activeJabatan?.id_biro || ''
+      
+      // Try to find the jabatan name from the reference table
+      const rawJabatan = activeJabatan?.id_jabatan || ''
+      const namaJabatan = jabMap[rawJabatan] || rawJabatan || '-'
 
       return {
         nik: t.nik,
         nama: t.nama || 'Tanpa Nama',
-        biro: biroMap[idBiro] || 'Tanpa Unit',
-        jabatan: t.riwayat_jabatan?.[0]?.id_jabatan || '-',
+        biro: unitMap[idBiro] || 'Tanpa Unit',
+        jabatan: namaJabatan,
         hadir: logs.count,
         telat: logs.lates,
         score: Number(disciplineScore.toFixed(1)),
