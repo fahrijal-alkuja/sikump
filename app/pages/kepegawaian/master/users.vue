@@ -27,7 +27,7 @@ const openEdit = (u: any) => {
   form.value = { 
     id: u.id, 
     username: u.username, 
-    password: '', // Leave empty to not change
+    password: '', 
     email: u.email, 
     first_name: u.first_name, 
     last_name: u.last_name, 
@@ -67,46 +67,56 @@ const deleteUser = async (id: number) => {
 
 <template>
   <div class="user-mgmt p-8">
-    <div class="page-header mb-10">
-      <div class="header-content">
-        <h1 class="page-title">Manajemen <span>Akses</span></h1>
-        <p class="page-subtitle">Pusat kendali akun and otorisasi sistem SIKUMP</p>
+    <div class="flex justify-between items-end mb-12">
+      <div>
+        <h1 class="text-4xl font-black text-slate-800 tracking-tighter">Manajemen <span class="text-indigo-600">Otoritas</span></h1>
+        <p class="text-slate-400 font-medium mt-1">Pusat kendali akun and perizinan sistem SIKUMP</p>
       </div>
       <button @click="openAdd" class="btn-primary-glow">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Registrasi User Baru
+        Registrasi Admin
       </button>
     </div>
 
     <!-- Stats Dashboard Micro -->
-    <div class="grid grid-cols-4 gap-6 mb-8">
-      <div class="stats-card glass">
-        <label>Total Akun</label>
-        <div class="val">{{ users?.data?.length || 0 }}</div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div class="stats-card glass flex justify-between items-center group">
+        <div>
+          <label>Total Entitas</label>
+          <div class="val">{{ users?.data?.length || 0 }}</div>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
       </div>
-      <div class="stats-card glass">
-        <label>Akun Aktif</label>
-        <div class="val text-emerald-500">{{ users?.data?.filter((u: any) => u.active).length || 0 }}</div>
+      <div class="stats-card glass flex justify-between items-center group">
+        <div>
+          <label>Akses Aktif</label>
+          <div class="val text-emerald-500">{{ users?.data?.filter((u: any) => u.active).length || 0 }}</div>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
       </div>
     </div>
 
-    <div class="data-container glass-card">
+    <div class="data-container glass-card bg-white/50 backdrop-blur-xl border border-white/20">
       <div class="table-scroll">
-        <table class="premium-table">
+        <table class="premium-table w-full">
           <thead>
             <tr>
-              <th>Personal Info</th>
-              <th>Status Peran</th>
+              <th class="pl-6">Identitas Pengguna</th>
+              <th>Peran</th>
               <th>Unit Otoritas</th>
-              <th>Aksesibilitas</th>
-              <th class="text-right">Tindakan</th>
+              <th>Status</th>
+              <th class="text-right pr-6">Tindakan</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="u in users?.data" :key="u.id" class="data-row">
-              <td>
+              <td class="pl-6">
                 <div class="user-info">
-                  <div class="avatar">
+                  <div class="avatar-glow">
                     {{ u.first_name ? u.first_name[0] : 'U' }}
                   </div>
                   <div class="details">
@@ -116,25 +126,27 @@ const deleteUser = async (id: number) => {
                 </div>
               </td>
               <td>
-                <span :class="['role-badge', u.role]">
-                  <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"></circle></svg>
+                <span :class="['role-chip', u.role]">
                   {{ u.role || 'prodi' }}
                 </span>
               </td>
-              <td class="text-sm font-semibold text-slate-500">
-                {{ u.unit_code || 'Universitas' }}
-              </td>
               <td>
-                <div :class="['status-pill', u.active ? 'on' : 'off']">
-                  {{ u.active ? 'Tersedia' : 'Ditangguhkan' }}
+                <div class="unit-box">
+                  <span class="unit-name">{{ u.unit_display }}</span>
+                  <span class="unit-code">{{ u.unit_code || 'CENTER' }}</span>
                 </div>
               </td>
               <td>
-                <div class="actions">
-                  <button @click="openEdit(u)" class="btn-icon edit" title="Edit Profil">
+                <div :class="['status-indicator', u.active ? 'active' : 'inactive']">
+                  {{ u.active ? 'Tersedia' : 'Nonaktif' }}
+                </div>
+              </td>
+              <td class="pr-6 text-right">
+                <div class="flex justify-end gap-2">
+                  <button @click="openEdit(u)" class="action-btn edit" title="Edit Otoritas">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                   </button>
-                  <button @click="deleteUser(u.id)" class="btn-icon delete" title="Hapus Akun">
+                  <button @click="deleteUser(u.id)" class="action-btn delete" title="Hapus Akun">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                   </button>
                 </div>
@@ -149,70 +161,70 @@ const deleteUser = async (id: number) => {
     <div v-if="showModal" class="modal-overlay">
       <div class="modal-card">
         <div class="modal-header">
-          <div class="icon-bulb">
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
-          <h2>{{ isEditing ? 'Modifikasi Akun' : 'Akreditasi User' }}</h2>
-          <p>{{ isEditing ? 'Perbarui informasi and hak akses user yang sudah ada' : 'Daftarkan admin baru untuk unit kerja tertentu' }}</p>
+           <div class="modal-badge">{{ isEditing ? 'Edit Profile' : 'New Account' }}</div>
+           <h2>Otorisasi Pengguna</h2>
+           <p>Tentukan hak akses and unit kerja personel administratif</p>
         </div>
 
         <div class="modal-body">
-          <div class="form-grid">
+          <div class="grid grid-cols-2 gap-4">
             <div class="field">
               <label>Nama Depan</label>
-              <input v-model="form.first_name" placeholder="Contoh: Budi" />
+              <input v-model="form.first_name" placeholder="John" />
             </div>
             <div class="field">
               <label>Nama Belakang</label>
-              <input v-model="form.last_name" placeholder="Contoh: Santoso" />
+              <input v-model="form.last_name" placeholder="Doe" />
             </div>
           </div>
 
           <div class="field">
-            <label>Identitas Login (Username/NIK)</label>
-            <input v-model="form.username" placeholder="Masukkan username unik" :disabled="isEditing" />
+            <label>Username Otoritas</label>
+            <input v-model="form.username" :disabled="isEditing" placeholder="username.unikarta" />
           </div>
 
           <div class="field">
-            <label>{{ isEditing ? 'Reset Password (Kosongkan jika tidak diubah)' : 'Kata Sandi Awal' }}</label>
+            <label>{{ isEditing ? 'Reset Password (Opsional)' : 'Password Utama' }}</label>
             <input v-model="form.password" type="password" placeholder="••••••••" />
           </div>
 
           <div class="field">
-            <label>Alamat Email</label>
-            <input v-model="form.email" type="email" placeholder="email@unikarta.ac.id" />
+            <label>Email Institusi</label>
+            <input v-model="form.email" type="email" placeholder="personel@unikarta.ac.id" />
           </div>
 
-          <div class="form-grid">
+          <div class="grid grid-cols-2 gap-4">
             <div class="field">
-              <label>Unit Kerja</label>
+              <label>Unit Penugasan</label>
               <select v-model="form.company">
-                <option value="">-- Pusat/Universitas --</option>
+                <option value="">-- Universitas (Pusat) --</option>
                 <option v-for="b in biros?.data" :key="b.id" :value="b.id">{{ b.nama }}</option>
               </select>
             </div>
             <div class="field">
-              <label>Role Akses</label>
+              <label>Tingkat Akses</label>
               <select v-model="form.role">
-                <option value="prodi">Admin Prodi/Unit</option>
-                <option value="admin">Admin Universitas</option>
+                <option value="prodi">Admin Unit/Fakultas</option>
+                <option value="admin">Super Admin (Rektorat)</option>
               </select>
             </div>
           </div>
 
-          <div class="field-check">
-            <label class="switch">
-              <input type="checkbox" v-model="form.active" :true-value="1" :false-value="0">
-              <span class="slider"></span>
-            </label>
-            <span>Status Akun Aktif</span>
+          <div class="status-toggle-box">
+             <div class="flex items-center gap-3">
+               <label class="switch">
+                 <input type="checkbox" v-model="form.active" :true-value="1" :false-value="0">
+                 <span class="switch-slider"></span>
+               </label>
+               <span class="text-sm font-bold text-slate-700">Akun ini dalam status Aktif</span>
+             </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button @click="showModal = false" class="btn-cancel">Batalkan</button>
-          <button @click="handleSave" class="btn-save shadow-lg shadow-indigo-200">
-            {{ isEditing ? 'Simpan Perubahan' : 'Konfirmasi Registrasi' }}
+          <button @click="showModal = false" class="btn-cancel">Batal</button>
+          <button @click="handleSave" class="btn-save">
+            {{ isEditing ? 'Perbarui Otoritas' : 'Luncurkan Akun' }}
           </button>
         </div>
       </div>
@@ -221,87 +233,66 @@ const deleteUser = async (id: number) => {
 </template>
 
 <style scoped>
-.page-title { font-size: 2.5rem; font-weight: 800; color: #1e293b; letter-spacing: -1.5px; margin: 0; }
-.page-title span { color: #4f46e5; }
-.page-subtitle { color: #64748b; font-weight: 500; margin-top: 0.25rem; }
-
 .btn-primary-glow { 
-  background: #4f46e5; color: white; padding: 0.875rem 1.75rem; border-radius: 16px; 
-  font-weight: 700; display: flex; align-items: center; gap: 0.75rem; 
-  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4); transition: all 0.3s;
+  background: #4f46e5; color: white; padding: 0.8rem 1.75rem; border-radius: 20px; 
+  font-weight: 800; display: flex; align-items: center; gap: 0.75rem; 
+  box-shadow: 0 10px 30px -10px #4f46e5; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.btn-primary-glow:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(79, 70, 229, 0.5); }
+.btn-primary-glow:hover { transform: translateY(-3px); box-shadow: 0 15px 40px -10px #4f46e5; }
 
-.stats-card { background: white; padding: 1.5rem; border-radius: 20px; border: 1px solid #f1f5f9; }
-.stats-card label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-.stats-card .val { font-size: 1.75rem; font-weight: 800; color: #1e293b; margin-top: 0.25rem; }
+.stats-card { background: white; padding: 1.75rem; border-radius: 28px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); }
+.stats-card label { display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; }
+.stats-card .val { font-size: 2.25rem; font-weight: 900; color: #1e293b; margin-top: 0.25rem; letter-spacing: -2px; }
 
-.data-container { background: white; border-radius: 24px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-.premium-table { width: 100%; border-collapse: separate; border-spacing: 0 0.75rem; }
-.premium-table th { padding: 1rem; color: #94a3b8; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+.premium-table thead th { padding: 1.25rem 1rem; color: #cbd5e1; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; text-align: left; }
+.data-row td { padding: 1.25rem 1rem; border-top: 1px solid #f8fafc; vertical-align: middle; }
+.data-row:hover { background: #fafafa; }
 
-.data-row { transition: all 0.2s; }
-.data-row td { padding: 1.25rem 1rem; background: #fff; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
-.data-row td:first-child { border-left: 1px solid #f1f5f9; border-radius: 16px 0 0 16px; }
-.data-row td:last-child { border-right: 1px solid #f1f5f9; border-radius: 0 16px 16px 0; }
-.data-row:hover td { background: #f8fafc; border-color: #e2e8f0; }
-
-.user-info { display: flex; align-items: center; gap: 1rem; }
-.avatar { width: 44px; height: 44px; background: #eef2ff; color: #4f46e5; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
+.user-info { display: flex; align-items: center; gap: 1.25rem; }
+.avatar-glow { width: 44px; height: 44px; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); color: #4338ca; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.25rem; border: 2px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 .details { display: flex; flex-direction: column; }
-.full-name { font-weight: 700; color: #1e293b; font-size: 0.95rem; }
-.username { font-size: 0.75rem; color: #94a3b8; }
+.full-name { font-weight: 800; color: #334155; font-size: 1rem; letter-spacing: -0.5px; }
+.username { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
 
-.role-badge { 
-  display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 10px; 
-  font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
-}
-.role-badge.admin { background: #fff1f2; color: #e11d48; }
-.role-badge.prodi { background: #f0fdf4; color: #166534; }
+.role-chip { padding: 0.3rem 0.75rem; border-radius: 10px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
+.role-chip.admin { background: #fee2e2; color: #991b1b; }
+.role-chip.prodi { background: #f1f5f9; color: #475569; }
 
-.status-pill { display: inline-flex; padding: 0.35rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700; }
-.status-pill.on { background: #dcfce7; color: #15803d; }
-.status-pill.off { background: #f1f5f9; color: #64748b; }
+.unit-box { display: flex; flex-direction: column; }
+.unit-name { font-weight: 800; color: #475569; font-size: 0.9rem; }
+.unit-code { font-size: 0.65rem; color: #cbd5e1; font-weight: 900; }
 
-.actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
-.btn-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: #f8fafc; border: 1px solid #f1f5f9; cursor: pointer; }
-.btn-icon.edit:hover { background: #4f46e5; color: white; border-color: #4f46e5; }
-.btn-icon.delete:hover { background: #ef4444; color: white; border-color: #ef4444; }
+.status-indicator { display: inline-flex; items-center: center; gap: 0.4rem; font-size: 0.75rem; font-weight: 800; }
+.status-indicator.active { color: #10b981; }
+.status-indicator.active::before { content: ''; width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; }
+.status-indicator.inactive { color: #94a3b8; }
+.status-indicator.inactive::before { content: ''; width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; }
 
-/* Modal Premium */
+.action-btn { width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.3s; background: #fcfcfc; border: 1px solid #f1f5f9; color: #94a3b8; }
+.action-btn.edit:hover { background: #4f46e5; color: white; border-color: #4f46e5; box-shadow: 0 4px 12px rgba(79,70,229,0.3); }
+.action-btn.delete:hover { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
+
+/* Modal Design v2 */
 .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-.modal-card { background: white; width: 100%; max-width: 560px; border-radius: 32px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: zoomIn 0.3s ease-out; }
-@keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.modal-card { background: white; width: 100%; max-width: 580px; border-radius: 36px; padding: 3rem; box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.2); }
+.modal-badge { display: inline-block; background: #f1f5f9; color: #64748b; padding: 0.3rem 0.8rem; border-radius: 100px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; margin-bottom: 1rem; }
+.modal-header h2 { font-size: 2rem; font-weight: 900; color: #1e293b; letter-spacing: -1px; margin: 0; }
+.modal-header p { color: #94a3b8; font-size: 0.95rem; margin-top: 0.5rem; margin-bottom: 2rem; }
 
-.modal-header { padding: 2.5rem; text-align: center; background: #f8fafc; border-bottom: 1px solid #f1f5f9; }
-.icon-bulb { width: 56px; height: 56px; background: #4f46e5; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 10px 20px rgba(79,70,229,0.3); }
-.modal-header h2 { font-size: 1.75rem; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: -1px; }
-.modal-header p { color: #64748b; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 500; }
+.field label { font-size: 0.7rem; font-weight: 900; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem; display: block; }
+.field input, .field select { width: 100%; padding: 1rem 1.25rem; background: #f8fafc; border: 2px solid #f8fafc; border-radius: 18px; font-size: 1rem; font-weight: 600; transition: all 0.3s; }
+.field input:focus { border-color: #4f46e5; background: white; outline: none; }
 
-.modal-body { padding: 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
-
-.field label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; display: block; padding-left: 0.25rem; }
-.field input, .field select { width: 100%; padding: 0.875rem 1.25rem; background: #f1f5f9; border: 1px solid #f1f5f9; border-radius: 14px; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; }
-.field input:focus { outline: none; background: white; border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08); }
-
-.field-check { display: flex; align-items: center; gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: 16px; margin-top: 0.5rem; }
-.field-check span { font-weight: 600; color: #1e293b; font-size: 0.9rem; }
-
-.modal-footer { padding: 2rem 2.5rem; display: flex; gap: 1rem; background: #f8fafc; }
-.btn-save { flex: 2; padding: 1rem; background: #4f46e5; color: white; border-radius: 16px; font-weight: 800; border: none; cursor: pointer; }
-.btn-cancel { flex: 1; padding: 1rem; background: white; color: #64748b; border: 1px solid #e2e8f0; border-radius: 16px; font-weight: 800; cursor: pointer; }
-
-/* Switch Toggle */
-.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.status-toggle-box { background: #f8fafc; padding: 1.25rem; border-radius: 20px; margin-top: 1rem; }
+.switch { position: relative; display: inline-block; width: 50px; height: 28px; }
 .switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; inset: 0; background-color: #e2e8f0; transition: .4s; border-radius: 24px; }
-.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: #10b981; }
-input:checked + .slider:before { transform: translateX(20px); }
+.switch-slider { position: absolute; cursor: pointer; inset: 0; background-color: #e2e8f0; transition: .4s; border-radius: 34px; }
+.switch-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .switch-slider { background-color: #10b981; }
+input:checked + .switch-slider:before { transform: translateX(22px); }
 
-@media (max-width: 768px) {
-  .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
-  .form-grid { grid-template-columns: 1fr; }
-}
+.modal-footer { display: flex; gap: 1rem; margin-top: 2rem; }
+.btn-save { flex: 2; padding: 1.1rem; background: #4f46e5; color: white; border-radius: 20px; font-weight: 900; border: none; box-shadow: 0 10px 20px -5px #4f46e5; cursor: pointer; transition: transform 0.2s; }
+.btn-cancel { flex: 1; padding: 1.1rem; background: #f1f5f9; color: #64748b; border-radius: 20px; font-weight: 800; cursor: pointer; }
+.btn-save:hover { transform: translateY(-2px); }
 </style>
