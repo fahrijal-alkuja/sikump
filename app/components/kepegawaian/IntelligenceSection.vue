@@ -8,12 +8,23 @@ const props = defineProps<{
 // --- FETCH REFERENCE DATA ---
 // @ts-ignore
 const { data: biroStore } = await useFetch<any>('/api/kepegawaian/biro')
+const { data: prodiStore } = await useFetch<any>('/api/kepegawaian/prodi')
+
 const biroData = computed(() => biroStore.value?.data || [])
+const prodiData = computed(() => prodiStore.value?.data || [])
 
 const getBiroName = (id: string | number) => {
-  if (!biroData.value) return id
+  if (!id) return '-'
+  
+  // Try Biro first
   const b = biroData.value.find((x: any) => x.id_biro == id)
-  return b ? b.nama_biro : id
+  if (b) return b.nama_biro
+  
+  // Try Prodi next
+  const p = prodiData.value.find((x: any) => x.kode_program_studi == id)
+  if (p) return p.nama_program_studi
+
+  return id
 }
 
 // --- HELPER: ROBUST DATE PARSING ---
