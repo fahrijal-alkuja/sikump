@@ -307,7 +307,7 @@ const handleExecuteDelete = async () => {
 .animate-modal { animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(40px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-.modal-surface-box { width: 100%; max-width: 500px; max-height: 90vh; background: white; border-radius: 40px; overflow-y: auto; box-shadow: 0 30px 80px -15px rgba(15, 23, 42, 0.3); }
+.modal-surface-box { width: 100%; max-width: 560px; max-height: 90vh; background: white; border-radius: 40px; overflow-y: auto; box-shadow: 0 30px 80px -15px rgba(15, 23, 42, 0.3); }
 .modal-form-header { padding: 30px 40px 20px; background: #f8fafc; text-align: center; border-bottom: 1px solid #f1f5f9; }
 .header-icon-box { width: 50px; height: 50px; background: #4f46e5; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; margin: 0 auto 12px; }
 .header-icon-box svg { width: 24px; height: 24px; }
