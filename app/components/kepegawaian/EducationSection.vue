@@ -175,7 +175,7 @@ const openPreview = (url: string, title: string) => {
           <td class="table-actions">
             <button 
               v-if="edu.upload_ijazah" 
-              @click="openPreview(`/assets/pendidikan/${edu.upload_ijazah}`, `Ijazah ${edu.asal_pendidikan}`)" 
+              @click="openPreview(`/assets/ijazah/${edu.upload_ijazah}`, `Ijazah ${edu.asal_pendidikan}`)" 
               class="btn-view"
               title="Lihat Ijazah"
             >
