@@ -112,7 +112,7 @@ const radarPoints = computed(() => {
 })
 
 const hasIncompleteData = computed(() => {
-  return timelineEvents.value.length < 2 && (props.employee.riwayat_pendidikan?.length || 0) === 0
+  return timelineEvents.value.length === 0 && (!props.employee.riwayat_pendidikan || props.employee.riwayat_pendidikan.length === 0)
 })
 </script>
 
