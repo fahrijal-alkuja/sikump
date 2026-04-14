@@ -66,11 +66,14 @@ export default defineEventHandler(async (event) => {
 
     const logMap: Record<string, { count: number, lates: number }> = {}
     absenLogs.forEach((log: any) => {
-      if (!logMap[log.userId]) logMap[log.userId] = { count: 0, lates: 0 }
+      const uId = log.userId
+      if (!uId) return
+      
+      if (!logMap[uId]) logMap[uId] = { count: 0, lates: 0 }
       if (log.statusOut === '1') {
-         logMap[log.userId].count++
+         logMap[uId].count++
          if (log.keteranganIn === 'Telat') {
-           logMap[log.userId].lates++
+           logMap[uId].lates++
          }
       }
     })
