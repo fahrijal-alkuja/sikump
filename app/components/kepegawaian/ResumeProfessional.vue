@@ -7,10 +7,28 @@ const props = defineProps<{
   employee: any
 }>()
 
-const handleExportPDF = () => {
+const handleExportPDF = async () => {
   const doc = new jsPDF('p', 'mm', 'a4')
   const e = props.employee
   const pageWidth = doc.internal.pageSize.getWidth()
+
+  // --- HELPER: IMAGE TO BASE64 ---
+  const getBase64Image = (url: string): Promise<string | null> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.setAttribute('crossOrigin', 'anonymous')
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(img, 0, 0)
+        resolve(canvas.toDataURL('image/jpeg'))
+      }
+      img.onerror = () => resolve(null)
+      img.src = url
+    })
+  }
 
   // --- HEADER & LOGO ---
   doc.setFillColor(248, 250, 252)
@@ -35,12 +53,19 @@ const handleExportPDF = () => {
   doc.setDrawColor(226, 232, 240)
   doc.line(15, 45, pageWidth - 15, 45)
   
-  // Foto Placeholder logic or Real Image if possible
-  doc.setFillColor(241, 245, 249)
-  doc.rect(15, 55, 35, 45, 'F')
-  doc.setFontSize(25)
-  doc.setTextColor(203, 213, 225)
-  doc.text(e.nama?.charAt(0) || 'U', 32, 82, { align: 'center' })
+  // Foto Loading
+  const photoUrl = e.pp ? `/assets/foto/${e.pp}` : null
+  const photoBase64 = photoUrl ? await getBase64Image(photoUrl) : null
+
+  if (photoBase64) {
+    doc.addImage(photoBase64, 'JPEG', 15, 55, 35, 45)
+  } else {
+    doc.setFillColor(241, 245, 249)
+    doc.rect(15, 55, 35, 45, 'F')
+    doc.setFontSize(25)
+    doc.setTextColor(203, 213, 225)
+    doc.text(e.nama?.charAt(0) || 'U', 32, 82, { align: 'center' })
+  }
 
   doc.setTextColor(30, 41, 59)
   doc.setFontSize(14)
