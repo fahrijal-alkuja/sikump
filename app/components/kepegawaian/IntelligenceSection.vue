@@ -73,20 +73,20 @@ const timelineEvents = computed(() => {
     events.push({
       date: getYear(jf.tmt),
       title: `Jabatan Akademik`,
-      description: jf.id_jafung === '1' ? 'Asisten Ahli' : jf.id_jafung === '2' ? 'Lektor' : jf.id_jafung === '3' ? 'Lektor Kepala' : 'Guru Besar',
+      description: jf.id_jafung == 1 ? 'Asisten Ahli' : jf.id_jafung == 2 ? 'Lektor' : jf.id_jafung == 3 ? 'Lektor Kepala' : jf.id_jafung == 4 ? 'Guru Besar' : 'Jabatan Akademik',
       type: 'career',
       icon: '🏛️'
     })
   })
 
-  // 3. Jabatan Struktural
-  props.employee.riwayat_jabatan?.forEach((jb: any) => {
+  // 4. Sertifikasi (Serdos)
+  props.employee.riwayat_sertifikasi?.forEach((cert: any) => {
     events.push({
-      date: getYear(jb.tmt),
-      title: `Jabatan Struktural`,
-      description: `Menjabat di ${getBiroName(jb.id_biro)}`,
-      type: 'struct',
-      icon: '💼'
+      date: cert.tahun || '-',
+      title: `Sertifikasi Profesional`,
+      description: cert.jenis_sertifikasi,
+      type: 'cert',
+      icon: '🛡️'
     })
   })
 
@@ -99,14 +99,17 @@ const timelineEvents = computed(() => {
 
 // --- LOGIC: RADAR CHART DATA ---
 const radarMetrics = computed(() => {
-  const isDosen = props.employee.ikatan_kerja === '1'
+  const isDosen = props.employee.ikatan_kerja == '1' || props.employee.type === 'dosen'
   if (isDosen) {
+    const eduScore = Math.min(100, (props.employee.riwayat_pendidikan?.length || 0) * 20)
+    const jafungScore = Math.min(100, (parseInt(props.employee.current_jafung || '0')) * 25)
+    
     return [
-      { label: 'Pendidikan', val: (props.employee.riwayat_pendidikan?.length || 0) * 20 || 30 },
-      { label: 'Jafung', val: (props.employee.current_jafung || 1) * 25 },
-      { label: 'Pengabdian', val: 50 },
-      { label: 'Penelitian', val: 40 },
-      { label: 'Masa Kerja', val: 70 }
+      { label: 'Pendidikan', val: eduScore || 30 },
+      { label: 'Akademik', val: jafungScore || 20 },
+      { label: 'Sertifikasi', val: props.employee.riwayat_sertifikasi?.length ? 100 : 20 },
+      { label: 'Penelitian', val: 50 },
+      { label: 'Pengabdian', val: 60 }
     ]
   } else {
     // For Tendik, ensure we don't have 0 in all cases to avoid weird radar
@@ -137,6 +140,90 @@ const radarPoints = computed(() => {
 
 const hasIncompleteData = computed(() => {
   return timelineEvents.value.length === 0 && (!props.employee.riwayat_pendidikan || props.employee.riwayat_pendidikan.length === 0)
+})
+
+const aiRecommendations = computed(() => {
+  const recs = []
+  const e = props.employee
+  const isDosen = e.type === 'dosen' || e.ikatan_kerja == '1'
+
+  if (isDosen) {
+    // 1. Education Progression Logic
+    const highestEdu = e.riwayat_pendidikan?.reduce((max: number, p: any) => Math.max(max, parseInt(p.id_pendidikan)), 0) || 0
+    
+    if (highestEdu < 5) { // Below S2
+      recs.push({
+        title: 'Akademik: Studi Lanjut S2',
+        text: 'Untuk memenuhi syarat homebase NIDN dan kualifikasi dosen tetap, sangat disarankan untuk segera melanjutkan studi ke jenjang S2 (Magister).',
+        priority: 'urgent'
+      })
+    } else if (highestEdu < 6) { // S2 but not S3
+      recs.push({
+        title: 'Akademik: Studi Lanjut S3',
+        text: 'Sebagai pemegang gelar S2, Anda disarankan mulai merencanakan studi Doktoral (S3) untuk memperkuat portofolio akademik dan syarat Lektor Kepala/Guru Besar.',
+        priority: 'high'
+      })
+    }
+
+    // 2. Certification (Serdos) Logic - Only for S2+
+    const hasSerdos = e.riwayat_sertifikasi?.length > 0
+    if (!hasSerdos && highestEdu >= 5) {
+      recs.push({
+        title: 'Profesional: Persiapan Serdos',
+        text: 'Kualifikasi pendidikan S2 telah terpenuhi. Fokus pada pengumpulan angka kredit (KUM) dan pengabdian masyarakat untuk pengusulan Serdos.',
+        priority: 'urgent'
+      })
+    } else if (!hasSerdos && highestEdu < 5) {
+      recs.push({
+        title: 'Profesional: Syarat Serdos',
+        text: 'Penyelesaian studi S2 adalah syarat utama Serdos. Fokus pada kelulusan S2 untuk membuka jalur sertifikasi dosen.',
+        priority: 'medium'
+      })
+    }
+
+    // 3. Jafung Progression Logic
+    const currentJf = parseInt(e.current_jafung || '0')
+    if (currentJf === 0) {
+      recs.push({
+        title: 'Karir: Pengusulan Jafung Pertama',
+        text: 'Segera siapkan berkas pengusulan Asisten Ahli (AA) untuk meresmikan jenjang karir akademik Anda.',
+        priority: 'high'
+      })
+    } else if (currentJf === 1) { // Asisten Ahli
+      recs.push({
+        title: 'Karir: Target Lektor',
+        text: 'Setelah masa kerja mencukupi, persiapkan publikasi jurnal ilmiah untuk kenaikan jabatan akademik ke jenjang Lektor.',
+        priority: 'medium'
+      })
+    } else if (currentJf === 2) { // Lektor
+       recs.push({
+        title: 'Karir: Target Lektor Kepala',
+        text: 'Jenjang Lektor Kepala membutuhkan publikasi di jurnal terakreditasi SINTA 2 atau Internasional Bereputasi. Mulai susun roadmap penelitian Anda.',
+        priority: 'high'
+      })
+    }
+  } else {
+    // Tendik Recommendations
+    const hasTrainingRecent = e.riwayat_pelatihan?.length > 2
+    if (!hasTrainingRecent) {
+      recs.push({
+        title: 'Kompetensi: Diklat Teknis',
+        text: 'Disarankan mengikuti pelatihan peningkatan kompetensi administrasi digital atau pelayanan prima untuk menunjang performa unit kerja.',
+        priority: 'medium'
+      })
+    }
+  }
+
+  // Default if list is empty
+  if (recs.length === 0) {
+    recs.push({
+      title: 'Karir Stabil & Optimal',
+      text: 'Pertahankan kinerja dan kontribusi aktif dalam tridharma perguruan tinggi. Fokus pada pemeliharaan data publikasi setiap semester.',
+      priority: 'low'
+    })
+  }
+
+  return recs
 })
 </script>
 
@@ -190,32 +277,50 @@ const hasIncompleteData = computed(() => {
         </div>
       </div>
 
-      <!-- RIGHT: CAREER TIMELINE -->
-      <div class="glass-card panel-timeline">
-        <div class="p-header">
-          <h3>Alur Lini Masa Karir</h3>
-          <p>Rekam jejak professional sepanjang masa bakti</p>
-        </div>
-
-        <div class="timeline-scroll">
-          <div v-for="(event, idx) in timelineEvents" :key="idx" class="timeline-item">
-            <div class="t-date">
-              <span class="year">{{ event.date }}</span>
-              <div class="dot-wrapper">
-                <div :class="['dot', event.type]"></div>
-                <div class="line"></div>
-              </div>
-            </div>
-            <div class="t-content">
-              <div class="t-icon">{{ event.icon }}</div>
-              <div class="t-text">
-                <h4>{{ event.title }}</h4>
-                <p>{{ event.description }}</p>
+      <!-- RIGHT: CAREER TIMELINE & RECS -->
+      <div class="intel-right">
+        <!-- AI RECOMMENDATIONS BLOCK -->
+        <div class="glass-card panel-recs mb-8">
+          <div class="p-header left">
+            <h3><span class="ai-sparkle">✨</span> Rekomendasi Strategis AI</h3>
+          </div>
+          <div class="recs-list">
+            <div v-for="(rec, idx) in aiRecommendations" :key="idx" class="rec-card" :class="rec.priority">
+              <div class="rec-icon">💡</div>
+              <div class="rec-body">
+                <h5>{{ rec.title }}</h5>
+                <p>{{ rec.text }}</p>
               </div>
             </div>
           </div>
-          <div v-if="timelineEvents.length === 0" class="empty-state">
-            Belum ada riwayat karir tercatat
+        </div>
+
+        <div class="glass-card panel-timeline">
+          <div class="p-header">
+            <h3>Alur Lini Masa Karir</h3>
+            <p>Rekam jejak professional sepanjang masa bakti</p>
+          </div>
+
+          <div class="timeline-scroll">
+            <div v-for="(event, idx) in timelineEvents" :key="idx" class="timeline-item">
+              <div class="t-date">
+                <span class="year">{{ event.date }}</span>
+                <div class="dot-wrapper">
+                  <div :class="['dot', event.type]"></div>
+                  <div class="line"></div>
+                </div>
+              </div>
+              <div class="t-content">
+                <div class="t-icon">{{ event.icon }}</div>
+                <div class="t-text">
+                  <h4>{{ event.title }}</h4>
+                  <p>{{ event.description }}</p>
+                </div>
+              </div>
+            </div>
+            <div v-if="timelineEvents.length === 0" class="empty-state">
+              Belum ada riwayat karir tercatat
+            </div>
           </div>
         </div>
       </div>
@@ -226,11 +331,14 @@ const hasIncompleteData = computed(() => {
 <style scoped>
 .intelligence-section { padding: 1rem; }
 .intel-grid { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 2rem; }
+.intel-right { display: flex; flex-direction: column; gap: 2rem; }
 
-.panel-radar, .panel-timeline { padding: 2.5rem; border-radius: 24px; min-height: 500px; display: flex; flex-direction: column; }
-.panel-radar { align-items: center; }
+.panel-radar, .panel-timeline, .panel-recs { padding: 2.5rem; border-radius: 24px; min-height: fit-content; display: flex; flex-direction: column; }
+.panel-radar { align-items: center; min-height: 500px; }
+.panel-recs { background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(255, 255, 255, 0.05)); border: 1px solid rgba(99, 102, 241, 0.2); }
 
 .p-header { margin-bottom: 2.5rem; text-align: center; }
+.p-header.left { text-align: left; margin-bottom: 1.5rem; }
 .p-header h3 { font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
 .p-header p { font-size: 0.85rem; color: #64748b; }
 
@@ -253,6 +361,7 @@ const hasIncompleteData = computed(() => {
 .dot.edu { background: #6366f1; box-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
 .dot.career { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
 .dot.struct { background: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+.dot.cert { background: #ec4899; box-shadow: 0 0 10px rgba(236, 72, 153, 0.5); }
 
 .timeline-item .line { width: 2px; flex: 1; background: #f1f5f9; margin-top: 5px; margin-bottom: -30px; }
 .timeline-item:last-child .line { display: none; }
@@ -272,6 +381,17 @@ const hasIncompleteData = computed(() => {
 .t-icon { font-size: 1.5rem; }
 .t-text h4 { font-size: 0.95rem; font-weight: 800; color: #1e293b; margin-bottom: 0.25rem; }
 .t-text p { font-size: 0.8rem; color: #64748b; font-weight: 600; }
+
+/* RECS STYLES */
+.ai-sparkle { color: #f59e0b; }
+.recs-list { display: flex; flex-direction: column; gap: 1rem; }
+.rec-card { display: flex; gap: 1rem; padding: 1.25rem; border-radius: 16px; background: rgba(255,255,255,0.4); border-left: 4px solid #e2e8f0; }
+.rec-card.urgent { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.05); }
+.rec-card.high { border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.05); }
+.rec-card.medium { border-left-color: #6366f1; background: rgba(99, 102, 241, 0.05); }
+.rec-icon { font-size: 1.2rem; }
+.rec-body h5 { margin: 0 0 0.25rem; font-size: 0.85rem; font-weight: 800; color: #1e293b; }
+.rec-body p { margin: 0; font-size: 0.8rem; color: #64748b; line-height: 1.4; font-weight: 500; }
 
 /* INCOMPLETE DATA UI */
 .incomplete-notice {

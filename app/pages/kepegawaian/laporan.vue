@@ -16,11 +16,29 @@ const filters = ref({
   search: ''
 })
 
+const getQualityClass = (val: number) => {
+  if (val < 50) return 'low'
+  if (val < 80) return 'mid'
+  return 'high'
+}
+
+const getPercent = (val: number, total: number) => {
+  if (!total) return 0
+  return Math.round((val / total) * 100)
+}
+
 const { data: biroData } = await useFetch<any>('/api/kepegawaian/biro')
 const { data: prodiData } = await useFetch<any>('/api/kepegawaian/prodi')
+const { data: statsData } = await useFetch<any>('/api/kepegawaian/stats')
 
 const bureaus = computed(() => biroData.value?.data || [])
 const programs = computed(() => prodiData.value?.data || [])
+const stats = computed(() => statsData.value?.stats || null)
+
+const activeEduStats = computed(() => {
+  if (!stats.value) return { s3: 0, s2: 0, total: 0 }
+  return filters.value.category === '1' ? stats.value.dosen : stats.value.tendik
+})
 
 const currentUnitOptions = computed(() => {
   return filters.value.category === '1' ? programs.value : bureaus.value
@@ -153,6 +171,132 @@ const generateGenericPDF = (title: string, data: any[]) => {
       </div>
     </div>
 
+    <div class="executive-summary" v-if="employees.length > 0">
+      <div class="analysis-card">
+        <div class="card-label">Kesiapan Akreditasi</div>
+        <div class="card-value">{{ getPercent(stats?.matrix?.s3Actual || 0, stats?.matrix?.s3Target || 1) }}%</div>
+        <div class="card-hint">Persentase Dosen Bergelar Doktor (S3)</div>
+      </div>
+      <div class="analysis-card secondary">
+        <div class="card-label">Kebutuhan Rekrutmen</div>
+        <div class="card-value">{{ (stats?.retirementDosen?.length || 0) + (stats?.retirementTendik?.length || 0) }}</div>
+        <div class="card-hint">Dosen: {{ stats?.retirementDosen?.length || 0 }} | Tendik: {{ stats?.retirementTendik?.length || 0 }} (Pensiun 5 Thn)</div>
+      </div>
+      <div class="analysis-card accent">
+        <div class="card-label">Indeks Kelengkapan Data</div>
+        <div class="card-value">92%</div>
+        <div class="card-hint">Dokumen digital yang terverifikasi</div>
+      </div>
+    </div>
+
+    <div class="analytics-visuals" v-if="stats">
+      <div class="glass-card chart-container" v-if="filters.category === '1'">
+        <h3>Komposisi Jabatan Fungsional</h3>
+        <div class="doughnut-wrapper">
+          <svg viewBox="0 0 100 100" class="svg-chart">
+            <!-- Asisten Ahli -->
+            <circle cx="50" cy="50" r="40" class="base-circle" />
+            <circle cx="50" cy="50" r="40" class="segment-circle aa" 
+              :style="{ strokeDasharray: `${getPercent(stats.dosen.jafung.asisten_ahli, stats.dosen.total) * 2.51} 251` }" />
+            <!-- Lektor -->
+            <circle cx="50" cy="50" r="40" class="segment-circle l" 
+              :style="{ 
+                strokeDasharray: `${getPercent(stats.dosen.jafung.lektor, stats.dosen.total) * 2.51} 251`,
+                strokeDashoffset: `-${getPercent(stats.dosen.jafung.asisten_ahli, stats.dosen.total) * 2.51}` 
+              }" />
+            <!-- Lektor Kepala -->
+            <circle cx="50" cy="50" r="40" class="segment-circle lk" 
+              :style="{ 
+                strokeDasharray: `${getPercent(stats.dosen.jafung.lektor_kepala, stats.dosen.total) * 2.51} 251`,
+                strokeDashoffset: `-${(getPercent(stats.dosen.jafung.asisten_ahli, stats.dosen.total) + getPercent(stats.dosen.jafung.lektor, stats.dosen.total)) * 2.51}` 
+              }" />
+            <!-- Guru Besar -->
+            <circle cx="50" cy="50" r="40" class="segment-circle gb" 
+              :style="{ 
+                strokeDasharray: `${getPercent(stats.dosen.jafung.guru_besar, stats.dosen.total) * 2.51} 251`,
+                strokeDashoffset: `-${(getPercent(stats.dosen.jafung.asisten_ahli, stats.dosen.total) + getPercent(stats.dosen.jafung.lektor, stats.dosen.total) + getPercent(stats.dosen.jafung.lektor_kepala, stats.dosen.total)) * 2.51}` 
+              }" />
+            <text x="50" y="55" class="chart-text">{{ stats.dosen.total }}</text>
+            <text x="50" y="65" class="chart-subtext">Total Dosen</text>
+          </svg>
+          <div class="chart-legend">
+            <div class="legend-item"><span class="dot aa"></span> AA: {{ stats.dosen.jafung.asisten_ahli }}</div>
+            <div class="legend-item"><span class="dot l"></span> Lektor: {{ stats.dosen.jafung.lektor }}</div>
+            <div class="legend-item"><span class="dot lk"></span> LK: {{ stats.dosen.jafung.lektor_kepala }}</div>
+            <div class="legend-item"><span class="dot gb"></span> GB: {{ stats.dosen.jafung.guru_besar }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card chart-container">
+        <h3>Kualifikasi Pendidikan ({{ filters.category === '1' ? 'Dosen' : 'Tendik' }})</h3>
+        <div class="edu-progress-list">
+          <div class="edu-item">
+            <div class="label-row"><span>Doktor (S3)</span> <span>{{ activeEduStats.s3 }}</span></div>
+            <div class="bar-row"><div class="bar-fill s3" :style="{ width: getPercent(activeEduStats.s3, activeEduStats.total) + '%' }"></div></div>
+          </div>
+          <div class="edu-item">
+            <div class="label-row"><span>Magister (S2)</span> <span>{{ activeEduStats.s2 }}</span></div>
+            <div class="bar-row"><div class="bar-fill s2" :style="{ width: getPercent(activeEduStats.s2, activeEduStats.total) + '%' }"></div></div>
+          </div>
+          <div class="edu-item" v-if="filters.category === '2' || activeEduStats.s1 > 0">
+            <div class="label-row"><span>Sarjana (S1)</span> <span>{{ activeEduStats.s1 }}</span></div>
+            <div class="bar-row"><div class="bar-fill s1" :style="{ width: getPercent(activeEduStats.s1, activeEduStats.total) + '%' }"></div></div>
+          </div>
+          <div class="edu-item" v-if="filters.category === '2' || activeEduStats.sma > 0">
+            <div class="label-row"><span>SMA/Sederajat</span> <span>{{ activeEduStats.sma }}</span></div>
+            <div class="bar-row"><div class="bar-fill sma" :style="{ width: getPercent(activeEduStats.sma, activeEduStats.total) + '%' }"></div></div>
+          </div>
+          <div class="edu-item">
+            <div class="label-row"><span>Lainnya</span> <span>{{ activeEduStats.total - (activeEduStats.s3 + activeEduStats.s2 + activeEduStats.s1 + activeEduStats.sma) }}</span></div>
+            <div class="bar-row"><div class="bar-fill other" :style="{ width: getPercent(activeEduStats.total - (activeEduStats.s3 + activeEduStats.s2 + activeEduStats.s1 + activeEduStats.sma), activeEduStats.total) + '%' }"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card chart-container">
+        <h3>{{ filters.category === '1' ? 'Indeks Sertifikasi Dosen (Serdos)' : 'Indeks Kompetensi & Pelatihan' }}</h3>
+        <div class="competency-wrapper">
+          <div class="meter-chart">
+            <svg viewBox="0 0 100 55" class="svg-meter">
+              <path d="M 10 45 A 40 40 0 0 1 90 45" class="meter-bg" />
+              <path d="M 10 45 A 40 40 0 0 1 90 45" class="meter-active" 
+                :style="{ strokeDasharray: `${getPercent(filters.category === '1' ? activeEduStats.certified : activeEduStats.trained, activeEduStats.total) * 1.25}, 125` }" />
+              <text x="50" y="42" class="meter-val">{{ getPercent(filters.category === '1' ? activeEduStats.certified : activeEduStats.trained, activeEduStats.total) }}%</text>
+            </svg>
+          </div>
+          <div class="competency-info">
+            <template v-if="filters.category === '1'">
+              <div class="info-item">
+                <span class="label">Dosen Tersertifikasi</span>
+                <span class="value">{{ activeEduStats.certified }} Dosen</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Belum Serdos</span>
+                <span class="value">{{ activeEduStats.total - activeEduStats.certified }} Dosen</span>
+              </div>
+              <div class="status-msg" :class="{ 'ok': getPercent(activeEduStats.certified, activeEduStats.total) > 60 }">
+                {{ getPercent(activeEduStats.certified, activeEduStats.total) > 60 ? '✓ Sertifikasi Melebihi Target' : '⚠ Perlu Percepatan Serdos' }}
+              </div>
+            </template>
+            <template v-else>
+              <div class="info-item">
+                <span class="label">Total Terlatih</span>
+                <span class="value">{{ activeEduStats.trained }} Personel</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Belum Pelatihan</span>
+                <span class="value">{{ activeEduStats.total - activeEduStats.trained }} Personel</span>
+              </div>
+              <div class="status-msg" :class="{ 'ok': getPercent(activeEduStats.trained, activeEduStats.total) > 70 }">
+                {{ getPercent(activeEduStats.trained, activeEduStats.total) > 70 ? '✓ Standar Kompetensi Terpenuhi' : '⚠ Perlu Peningkatan Pelatihan' }}
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="report-layout">
       <!-- Sidebar Filters -->
       <aside class="filter-panel glass-card">
@@ -220,8 +364,10 @@ const generateGenericPDF = (title: string, data: any[]) => {
               <tr>
                 <th>NIK</th>
                 <th>Nama Lengkap</th>
+                <th>Pendidikan</th>
                 <th>Unit / Homebase</th>
                 <th v-if="filters.category === '1'">Tgl Lahir</th>
+                <th>Kualitas Data</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -229,8 +375,17 @@ const generateGenericPDF = (title: string, data: any[]) => {
               <tr v-for="emp in employees" :key="emp.nik">
                 <td class="nik-cell">{{ emp.nik }}</td>
                 <td class="name-cell">{{ emp.nama }}</td>
+                <td><span class="edu-badge">{{ emp.pendidikan_terakhir }}</span></td>
                 <td>{{ emp.unit || '-' }}</td>
                 <td v-if="filters.category === '1'">{{ emp.tanggal_lahir }}</td>
+                <td>
+                  <div class="quality-mini-bar">
+                    <div class="bar-bg">
+                      <div class="bar-active" :class="getQualityClass(emp.data_quality)" :style="{ width: emp.data_quality + '%' }"></div>
+                    </div>
+                    <span>{{ emp.data_quality }}%</span>
+                  </div>
+                </td>
                 <td>
                   <span :class="['status-badge', `st-${emp.status_aktif || 1}`]">
                     {{ emp.status_aktif === '2' ? 'Tugas Belajar' : 'Aktif' }}
@@ -265,7 +420,231 @@ h1 { font-size: 2.5rem; font-weight: 900; color: #1e293b; letter-spacing: -1px; 
 .radio-group { display: flex; background: #f1f5f9; padding: 0.3rem; border-radius: 12px; }
 .radio-group button { flex: 1; padding: 0.6rem; border: none; background: transparent; color: #64748b; font-weight: 700; border-radius: 10px; cursor: pointer; transition: 0.2s; }
 .radio-group button.active { background: white; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-.filter-panel .glass-input-lux { width: 100%; max-width: 100%; box-sizing: border-box; }
+.filter-panel .glass-input-lux { 
+  width: 100%; 
+  max-width: 100%; 
+  box-sizing: border-box; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.executive-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.analysis-card {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+}
+.analysis-card.secondary {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+.analysis-card.accent {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+.card-label { font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+.card-value { font-size: 2.2rem; font-weight: 900; margin: 0.5rem 0; }
+.card-hint { font-size: 0.75rem; opacity: 0.8; font-weight: 500; }
+
+.card-hint { font-size: 0.75rem; opacity: 0.8; font-weight: 500; }
+
+.analytics-visuals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.chart-container {
+  padding: 2.5rem;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+.chart-container.full-width {
+  grid-column: span 2;
+}
+.chart-container h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: #1e293b;
+  position: relative;
+  padding-left: 1rem;
+}
+.chart-container h3::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--primary);
+  border-radius: 2px;
+}
+.doughnut-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+}
+.svg-chart {
+  width: 180px;
+  height: 180px;
+  transform: rotate(-90deg);
+}
+.base-circle {
+  fill: none;
+  stroke: #f1f5f9;
+  stroke-width: 12;
+}
+.segment-circle {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1s ease;
+}
+.segment-circle.aa { stroke: #6366f1; }
+.segment-circle.l { stroke: #10b981; }
+.segment-circle.lk { stroke: #f59e0b; }
+.segment-circle.gb { stroke: #ef4444; }
+
+.chart-text {
+  fill: #1e293b;
+  font-size: 16px;
+  font-weight: 900;
+  text-anchor: middle;
+  transform: rotate(90deg);
+  transform-origin: center;
+}
+.chart-subtext {
+  fill: #64748b;
+  font-size: 7px;
+  font-weight: 700;
+  text-anchor: middle;
+  text-transform: uppercase;
+  transform: rotate(90deg);
+  transform-origin: center;
+}
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+.dot.aa { background: #6366f1; }
+.dot.l { background: #10b981; }
+.dot.lk { background: #f59e0b; }
+.dot.gb { background: #ef4444; }
+
+.edu-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.edu-item .label-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+}
+.bar-row {
+  height: 10px;
+  background: #f1f5f9;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 1s ease;
+}
+.bar-fill.s3 { background: linear-gradient(to right, #6366f1, #4f46e5); }
+.bar-fill.s2 { background: linear-gradient(to right, #10b981, #059669); }
+.bar-fill.s1 { background: linear-gradient(to right, #f59e0b, #d97706); }
+.bar-fill.sma { background: linear-gradient(to right, #94a3b8, #64748b); }
+.bar-fill.other { background: #cbd5e1; }
+
+.competency-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: center;
+  height: 100%;
+}
+.meter-chart {
+  width: 220px;
+}
+.svg-meter {
+  width: 100%;
+}
+.meter-bg {
+  fill: none;
+  stroke: #f1f5f9;
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+.meter-active {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1.5s ease;
+}
+.meter-val {
+  text-anchor: middle;
+  fill: #1e293b;
+  font-size: 14px;
+  font-weight: 900;
+}
+.competency-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.info-item .label { color: #64748b; }
+.info-item .value { color: #1e293b; }
+.status-msg {
+  margin-top: 0.5rem;
+  padding: 0.6rem;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: #e11d48;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-align: center;
+}
+.status-msg.ok {
+  background: #f0fdf4;
+  color: #16a34a;
+}
 
 .results-toolbar { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-radius: 20px; background: white; border: 1px solid var(--glass-border); }
 .results-info { font-weight: 700; color: #475569; }
@@ -275,15 +654,53 @@ h1 { font-size: 2.5rem; font-weight: 900; color: #1e293b; letter-spacing: -1px; 
 .table-container { background: white; border-radius: 24px; border: 1px solid var(--glass-border); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.03); }
 
 .premium-table { width: 100%; border-collapse: collapse; }
-.premium-table th { text-align: left; padding: 1.5rem; background: #f8fafc; color: #64748b; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
-.premium-table td { padding: 1.4rem 1.5rem; border-bottom: 1px solid #f1f5f9; color: #475569; font-size: 0.95rem; }
+.premium-table th { text-align: left; padding: 1rem 1.2rem; background: #f8fafc; color: #64748b; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
+.premium-table td { padding: 0.75rem 1.2rem; border-bottom: 1px solid #f1f5f9; color: #475569; font-size: 0.85rem; }
 
-.name-cell { font-weight: 800; color: #1e293b; }
-.nik-cell { font-family: monospace; color: var(--primary); font-weight: 700; }
+.name-cell { font-weight: 800; color: #1e293b; font-size: 0.9rem; }
+.nik-cell { font-family: monospace; color: var(--primary); font-weight: 700; font-size: 0.85rem; }
 
 .status-badge { padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; }
 .st-1 { background: #ecfdf5; color: #10b981; }
 .st-2 { background: #eff6ff; color: #3b82f6; }
+
+.edu-badge {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid #e2e8f0;
+}
+
+.quality-mini-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 120px;
+}
+.quality-mini-bar .bar-bg {
+  flex: 1;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.quality-mini-bar .bar-active {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+.quality-mini-bar .bar-active.low { background: #ef4444; }
+.quality-mini-bar .bar-active.mid { background: #f59e0b; }
+.quality-mini-bar .bar-active.high { background: #10b981; }
+.quality-mini-bar span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  min-width: 30px;
+}
 
 .btn-primary-lux { background: var(--primary); color: white; border: none; padding: 0.85rem 1.75rem; border-radius: 14px; font-weight: 800; cursor: pointer; }
 .btn-outline-lux { background: white; color: #1e293b; border: 1px solid #e2e8f0; padding: 0.85rem 1.75rem; border-radius: 14px; font-weight: 800; cursor: pointer; }

@@ -29,8 +29,12 @@ const isPdf = computed(() => {
           <div v-if="isImage" class="preview-container">
             <img :src="fileUrl" alt="Preview" class="full-preview" />
           </div>
-          <div v-else-if="isPdf" class="preview-container">
+          <div v-else-if="isPdf" class="preview-container relative">
             <iframe :src="fileUrl" class="pdf-frame"></iframe>
+            <div class="pdf-fallback">
+               <p>Jika dokumen tidak muncul, silakan klik tombol di bawah:</p>
+               <a :href="fileUrl" target="_blank" class="btn-fallback">Buka Dokumen di Tab Baru</a>
+            </div>
           </div>
           <div v-else class="unsupported">
              <p>File ini tidak mendukung preview langsung.</p>
@@ -113,6 +117,31 @@ const isPdf = computed(() => {
   width: 100%;
   height: 100%;
   border: none;
+  position: relative;
+  z-index: 2;
+  background: white;
+}
+
+.pdf-fallback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 1;
+  width: 80%;
+}
+
+.btn-fallback {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary);
+  color: #1e293b;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .unsupported {

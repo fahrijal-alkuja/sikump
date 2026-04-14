@@ -14,16 +14,6 @@ const openPreview = (url: string, title: string) => {
   preview.value = { show: true, url, title }
 }
 
-const getJafungName = (id: any) => {
-  const map: any = { 1: 'Asisten Ahli', 2: 'Lektor', 3: 'Lektor Kepala', 4: 'Guru Besar' }
-  return map[id] || 'Lainnya'
-}
-
-// Jafung State
-const isFormJafungOpen = ref(false)
-const editingJafungId = ref<number | null>(null)
-const jafungForm = ref({ id_jafung: 1, no_sk: '', tmt: '' })
-const jafungFile = ref<HTMLInputElement | null>(null)
 
 // Jabatan State
 const isFormJabatanOpen = ref(false)
@@ -55,15 +45,6 @@ const getStatusName = (id: any) => {
 
 const loading = ref(false)
 
-const handleEditJafung = (item: any) => {
-    editingJafungId.value = item.id
-    jafungForm.value = {
-        id_jafung: item.id_jafung,
-        no_sk: item.no_sk,
-        tmt: item.tmt
-    }
-    isFormJafungOpen.value = true
-}
 
 const handleEditJabatan = (item: any) => {
     editingJabatanId.value = item.id
@@ -80,11 +61,6 @@ const handleEditJabatan = (item: any) => {
     isFormJabatanOpen.value = true
 }
 
-const resetJafung = () => {
-    isFormJafungOpen.value = false
-    editingJafungId.value = null
-    jafungForm.value = { id_jafung: 1, no_sk: '', tmt: '' }
-}
 
 const resetJabatan = () => {
     isFormJabatanOpen.value = false
@@ -92,31 +68,6 @@ const resetJabatan = () => {
     jabatanForm.value = { id_jabatan: '', id_biro: '', no_sk: '', tmt: '', ikatan_kerja: '1', is_aktiv: 'Y', status: '', tanggal_keluar: '' }
 }
 
-const handleSubmitJafung = async () => {
-  loading.value = true
-  try {
-    const formData = new FormData()
-    formData.append('nik', props.nik)
-    formData.append('id_jafung', jafungForm.value.id_jafung.toString())
-    formData.append('no_sk', jafungForm.value.no_sk)
-    formData.append('tmt', jafungForm.value.tmt)
-    if (jafungFile.value?.files?.[0]) formData.append('upload_sk', jafungFile.value.files[0])
-
-    const url = editingJafungId.value 
-        ? `/api/kepegawaian/riwayat/riwayat_jafung/${editingJafungId.value}`
-        : `/api/kepegawaian/riwayat/riwayat_jafung`
-    
-    const method = editingJafungId.value ? 'PUT' : 'POST'
-
-    const res = await $fetch<any>(url, { method, body: formData })
-    if (res.success) {
-      showAlert(`Riwayat Jafung berhasil ${editingJafungId.value ? 'diperbarui' : 'ditambahkan'}`, 'success')
-      resetJafung()
-      emit('refresh')
-    }
-  } catch (e) { showAlert('Gagal memproses data', 'error') }
-  finally { loading.value = false }
-}
 
 const handleSubmitJabatan = async () => {
   loading.value = true
@@ -174,75 +125,6 @@ const handleDelete = (table: string, id: number) => {
       :file-url="preview.url" 
       @close="preview.show = false" 
     />
-    <!-- JAFUNG SECTION -->
-    <div class="section-block" v-if="props.type === 'dosen'">
-      <div class="section-header">
-        <h4>Riwayat Jabatan Akademik (Jafung)</h4>
-        <button @click="isFormJafungOpen ? resetJafung() : (isFormJafungOpen = true)" class="btn-add">
-          {{ isFormJafungOpen ? 'Batal' : '+ Tambah Jafung' }}
-        </button>
-      </div>
-
-      <div v-if="isFormJafungOpen" class="form-card mb-4">
-        <form @submit.prevent="handleSubmitJafung" class="premium-form">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Jabatan</label>
-              <select v-model="jafungForm.id_jafung" class="glass-input">
-                <option :value="1">Asisten Ahli</option>
-                <option :value="2">Lektor</option>
-                <option :value="3">Lektor Kepala</option>
-                <option :value="4">Guru Besar</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Nomor SK</label>
-              <input v-model="jafungForm.no_sk" type="text" class="glass-input" required />
-            </div>
-            <div class="form-group">
-              <label>TMT</label>
-              <input v-model="jafungForm.tmt" type="text" class="glass-input" placeholder="DD-MM-YYYY" required />
-            </div>
-            <div class="form-group">
-              <label>Update File SK (Opsional)</label>
-              <input type="file" ref="jafungFile" class="glass-input" accept=".jpg,.jpeg,.png,.pdf" />
-            </div>
-          </div>
-          <div class="form-footer">
-          <button type="submit" :disabled="loading" class="btn-primary-lux">
-            <span v-if="!loading">{{ editingJafungId ? 'Perbarui Jafung' : 'Simpan Jafung' }}</span>
-            <div v-else class="spinner-small"></div>
-          </button>
-        </div>
-        </form>
-      </div>
-
-      <table class="premium-table">
-        <thead>
-          <tr>
-            <th>No. SK</th>
-            <th>TMT</th>
-            <th>Jabatan</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="j in jafungData" :key="j.id">
-            <td>{{ j.no_sk }}</td>
-            <td>{{ j.tmt }}</td>
-            <td>{{ getJafungName(j.id_jafung) }}</td>
-            <td class="table-actions">
-                <button v-if="j.file_upload" @click="openPreview(`/assets/jafung/${j.file_upload}`, `SK Jafung - ${getJafungName(j.id_jafung)}`)" title="Lihat SK" class="btn-icon-lux view">📄</button>
-                <button @click="handleEditJafung(j)" title="Edit" class="btn-edit-icon">✏️</button>
-                <button @click="handleDelete('riwayat_jafung', j.id)" title="Hapus" class="btn-del-icon">&times;</button>
-            </td>
-          </tr>
-          <tr v-if="jafungData.length === 0">
-            <td colspan="4" class="text-center text-muted">Belum ada riwayat jafung</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
 
     <!-- STRUKTUR SECTION -->
     <div class="section-block mt-8">
@@ -283,7 +165,7 @@ const handleDelete = (table: string, id: number) => {
 
             <div class="form-group">
               <label>TMT Mulai</label>
-              <input v-model="jabatanForm.tmt" type="text" class="glass-input-lux" placeholder="DD-MM-YYYY" required />
+              <input v-model="jabatanForm.tmt" type="date" class="glass-input-lux" required />
             </div>
 
             <div class="form-group">
@@ -357,9 +239,9 @@ const handleDelete = (table: string, id: number) => {
               </span>
             </td>
             <td class="table-actions">
-                <button v-if="j.upload_sk" @click="openPreview(`/assets/${j.status === '2' ? 'skMutasi' : 'SK'}/${j.upload_sk}`, `SK ${getStatusName(j.status)} - ${getJabatanName(j.id_jabatan)}`)" title="Lihat SK" class="btn-icon-lux view">📄</button>
-                <button @click="handleEditJabatan(j)" title="Edit" class="btn-icon-lux edit">✏️</button>
-                <button @click="handleDelete('riwayat_jabatan', j.id)" title="Hapus" class="btn-icon-lux delete">✕</button>
+                <button v-if="j.upload_sk" @click="openPreview(`/assets/${j.status === '2' ? 'skMutasi' : 'SK'}/${j.upload_sk}`, `SK ${getStatusName(j.status)} - ${getJabatanName(j.id_jabatan)}`)" title="Lihat SK" class="btn-icon-view">📄</button>
+                <button @click="handleEditJabatan(j)" title="Edit" class="btn-edit-icon">✏️</button>
+                <button @click="handleDelete('riwayat_jabatan', j.id)" title="Hapus" class="btn-del-icon">&times;</button>
             </td>
           </tr>
           <tr v-if="jabatanData.length === 0">
@@ -408,12 +290,10 @@ const handleDelete = (table: string, id: number) => {
 .status-badge.inactive { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
 
 .table-actions { display: flex; gap: 0.75rem; align-items: center; }
-.btn-icon-lux { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; font-size: 1.2rem; text-decoration: none; }
-.btn-icon-lux:hover { background: #fff; transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-.btn-icon-lux.view { color: #10b981; }
-.btn-icon-lux.edit { color: #6366f1; }
-.btn-icon-lux.delete { color: #ef4444; }
-.btn-icon-lux.delete:hover { background: #fef2f2; border-color: #fee2e2; }
+.btn-icon-view { background: none; border: none; font-size: 1.2rem; cursor: pointer; filter: grayscale(1); transition: 0.2s; }
+.btn-icon-view:hover { filter: grayscale(0); transform: scale(1.1); }
+.btn-edit-icon, .btn-del-icon { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+.btn-del-icon { color: #ef4444; font-size: 1.4rem; }
 
 .dark-option { background: #0f172a; color: #fff; }
 </style>

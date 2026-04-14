@@ -31,6 +31,8 @@ model tmst_karyawan {
   riwayat_pengangkatan riwayat_pengangkatan[]
   tmst_pajak           tmst_pajak[]
   tmst_askes           tmst_askes[]
+  riwayat_pangkat      tmst_pangkat[]
+  riwayat_sertifikasi  tmst_sertifikasi[]
 }
 
 model riwayat_jabatan {

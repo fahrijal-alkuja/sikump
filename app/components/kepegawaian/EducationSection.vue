@@ -142,7 +142,7 @@ const openPreview = (url: string, title: string) => {
           </div>
           <div class="form-group">
             <label>Tahun Lulus</label>
-            <input v-model="form.tahun_lulus" type="text" class="glass-input" placeholder="Contoh: 2020" required />
+            <input v-model="form.tahun_lulus" type="number" min="1950" max="2100" class="glass-input" placeholder="Tahun" required />
           </div>
           <div class="form-group">
             <label>Upload Ijazah (PDF/JPG)</label>
@@ -176,7 +176,7 @@ const openPreview = (url: string, title: string) => {
             <button 
               v-if="edu.upload_ijazah" 
               @click="openPreview(`/assets/ijazah/${edu.upload_ijazah}`, `Ijazah ${edu.asal_pendidikan}`)" 
-              class="btn-view"
+              class="btn-icon-view"
               title="Lihat Ijazah"
             >
               📄
@@ -201,14 +201,17 @@ const openPreview = (url: string, title: string) => {
 .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 .glass-input { background: rgba(255,255,255,0.8); border: 1px solid var(--glass-border); color: #1e293b; padding: 1rem; border-radius: 10px; width: 100%; outline: none; transition: all 0.2s; }
 .form-footer { margin-top: 2rem; display: flex; justify-content: flex-end; }
-.premium-table { width: 100%; border-collapse: collapse; }
-.premium-table th { text-align: left; padding: 1rem; border-bottom: 1px solid var(--glass-border); font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
-.premium-table td { padding: 1rem; border-bottom: 1px solid var(--glass-border); font-size: 0.9rem; }
-.table-actions { display: flex; gap: 1rem; align-items: center; }
-.btn-view { background: none; border: none; font-size: 1.2rem; cursor: pointer; filter: grayscale(1); }
-.btn-view:hover { filter: grayscale(0); transform: scale(1.1); }
-.btn-edit-icon { background: none; border: none; font-size: 1.1rem; cursor: pointer; }
-.btn-del-icon { background: none; border: none; color: #ef4444; font-size: 1.5rem; cursor: pointer; line-height: 1; opacity: 0.7; }
-.btn-del-icon:hover { opacity: 1; }
-.mb-6 { margin-bottom: 1.5rem; }
+.premium-table { width: 100%; border-collapse: separate; border-spacing: 0 0.5rem; }
+.premium-table th { text-align: left; padding: 1rem; color: #64748b; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
+.premium-table td { padding: 1.25rem 1rem; background: white; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
+.premium-table td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 12px; border-bottom-left-radius: 12px; font-weight: 800; color: #1e293b; }
+.premium-table td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+
+.table-actions { display: flex; gap: 0.75rem; align-items: center; }
+.btn-icon-view { background: none; border: none; font-size: 1.2rem; cursor: pointer; filter: grayscale(1); transition: 0.2s; }
+.btn-icon-view:hover { filter: grayscale(0); transform: scale(1.1); }
+.btn-edit-icon, .btn-del-icon { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+.btn-del-icon { color: #ef4444; font-size: 1.4rem; }
+
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 </style>

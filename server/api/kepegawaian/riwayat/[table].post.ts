@@ -14,9 +14,23 @@ export default defineEventHandler(async (event) => {
     // Fallback to JSON if not multipart
     const body = await readBody(event)
     const data = { ...body }
-    if (data.tmt && data.tmt.includes('-') && data.tmt.split('-')[0].length === 4) {
-      data.tmt = data.tmt.split('-').reverse().join('-')
+    
+    // Auto-convert specific DateTime fields & numbers
+    for (const key in data) {
+      if (['tanggal_keluar', 'tanggal_sk'].includes(key)) {
+        if (data[key] && data[key] !== 'undefined' && data[key] !== 'null' && data[key] !== '') {
+          const d = new Date(data[key])
+          if (!isNaN(d.getTime())) data[key] = d
+          else delete data[key]
+        } else {
+          data[key] = null
+        }
+      }
+      if (['id_pendidikan', 'id_pangkat'].includes(key)) {
+        if (data[key]) data[key] = parseInt(data[key])
+      }
     }
+
     // @ts-ignore
     const result = await prisma[table].create({ data })
     return { success: true, data: result }
@@ -61,13 +75,21 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Clean data fields
-  if (data.tmt && data.tmt.includes('-') && data.tmt.split('-')[0].length === 4) {
-    data.tmt = data.tmt.split('-').reverse().join('-')
+  // Safe Conversion for specific DateTime fields
+  for (const key in data) {
+    if (['tanggal_keluar', 'tanggal_sk'].includes(key)) {
+      if (data[key] && data[key] !== 'undefined' && data[key] !== 'null' && data[key] !== '') {
+        const d = new Date(data[key])
+        if (!isNaN(d.getTime())) data[key] = d
+        else delete data[key]
+      } else {
+        data[key] = null
+      }
+    }
+    if (['id_pendidikan', 'id_pangkat'].includes(key)) {
+      if (data[key]) data[key] = parseInt(data[key])
+    }
   }
-  // Convert numeric strings to numbers if they look like IDs
-  if (data.id_pendidikan) data.id_pendidikan = parseInt(data.id_pendidikan)
-  if (data.id_jafung) data.id_jafung = parseInt(data.id_jafung)
 
   try {
     // @ts-ignore

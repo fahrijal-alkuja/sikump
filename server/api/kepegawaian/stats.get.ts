@@ -167,6 +167,35 @@ export default defineEventHandler(async (event) => {
       ORDER BY count DESC
     `)
 
+    const s3TendikRes: any = await runQuery(`
+      SELECT COUNT(DISTINCT k.nik) as count FROM riwayat_pendidikan rp
+      JOIN tmst_karyawan k ON rp.nik = k.nik
+      WHERE rp.id_pendidikan = 6 AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter}
+    `)
+    const s2TendikRes: any = await runQuery(`
+      SELECT COUNT(DISTINCT k.nik) as count FROM riwayat_pendidikan rp
+      JOIN tmst_karyawan k ON rp.nik = k.nik
+      WHERE rp.id_pendidikan = 5 AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter}
+    `)
+    const s1TendikRes: any = await runQuery(`
+      SELECT COUNT(DISTINCT k.nik) as count FROM riwayat_pendidikan rp
+      JOIN tmst_karyawan k ON rp.nik = k.nik
+      WHERE rp.id_pendidikan = 4 AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter}
+    `)
+    const smaTendikRes: any = await runQuery(`
+      SELECT COUNT(DISTINCT k.nik) as count FROM riwayat_pendidikan rp
+      JOIN tmst_karyawan k ON rp.nik = k.nik
+      WHERE rp.id_pendidikan = 2 AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter}
+    `)
+
+    // Count certified from tmst_sertifikasi
+    const certifiedDosenRes: any = await runQuery(`
+      SELECT COUNT(DISTINCT s.nik) as count FROM tmst_sertifikasi s
+      JOIN tmst_dosen d ON s.nik = d.nik
+      WHERE d.nik NOT LIKE '0000%' ${dFilter}
+    `)
+    const certifiedDosenCount = Number(certifiedDosenRes[0]?.count || 0)
+
     // 9. CONVERT BIGINT TO NUMBER (Fix Serialization Error)
     const serialize = (obj: any): any => {
       return JSON.parse(JSON.stringify(obj, (key, value) =>
@@ -182,12 +211,22 @@ export default defineEventHandler(async (event) => {
           total: dosenCount, 
           jafung,
           trained: dosenTrainingCount,
-          trainedList: trainedDosenList
+          trainedList: trainedDosenList,
+          certified: certifiedDosenCount,
+          s3: s3Actual,
+          s2: s2Actual,
+          s1: 0, // Dosen always at least S2/S3
+          sma: 0
         },
         tendik: { 
           total: karyawanCount,
           trained: tendikTrainingCount,
-          trainedList: trainedTendikList
+          trainedList: trainedTendikList,
+          certified: 0, // Tendik placeholder
+          s3: Number(s3TendikRes[0]?.count || 0),
+          s2: Number(s2TendikRes[0]?.count || 0),
+          s1: Number(s1TendikRes[0]?.count || 0),
+          sma: Number(smaTendikRes[0]?.count || 0)
         },
         alerts: alertsRes.map((a: any) => ({ ...a, identitas: a.nuptk || a.nik })),
         matrix: { s3Actual, s3Target, s2Actual },

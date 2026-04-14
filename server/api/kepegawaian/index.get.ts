@@ -27,8 +27,18 @@ export default defineEventHandler(async (event) => {
           d.nik, d.nuptk, d.nama_dosen as nama, d.tempat_lahir, 
           DATE_FORMAT(d.tanggal_lahir, '%d-%m-%Y') as tanggal_lahir, 
           d.jenis_kelamin, d.telepon, d.status_aktif,
+          d.kode_jenjang_pendidikan as edu_code,
           ps.nama_program_studi as unit,
-          (SELECT tj.id_jafung FROM tmst_jafung tj WHERE tj.nik = d.nik ORDER BY tj.id DESC LIMIT 1) as current_jafung
+          (SELECT tj.id_jafung FROM tmst_jafung tj WHERE tj.nik = d.nik ORDER BY tj.id DESC LIMIT 1) as current_jafung,
+          (
+            COALESCE((CASE WHEN d.upload_ktp IS NOT NULL AND d.upload_ktp != '' THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM riwayat_pendidikan rp WHERE rp.nik = d.nik AND rp.upload_ijazah != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = d.nik AND rj.upload_sk != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM riwayat_keluarga rk WHERE rk.nik = d.nik AND rk.upload_kk != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM tmst_pajak tp WHERE tp.nik = d.nik AND tp.upload_npwp != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM tmst_askes ta WHERE ta.nik = d.nik AND ta.upload_askes != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM tmst_jafung tj WHERE tj.nik = d.nik AND tj.file_upload != '') THEN 1 ELSE 0 END), 0)
+          ) as docs_count
         FROM tmst_dosen d 
         LEFT JOIN mst_program_studi ps ON d.kode_program_studi = ps.kode_program_studi
         WHERE d.nik NOT LIKE '0000%'
@@ -54,7 +64,24 @@ export default defineEventHandler(async (event) => {
 
       sql += ` ORDER BY nama ASC LIMIT 500`
       const data: any[] = await prisma.$queryRawUnsafe(sql)
-      employees = data.map(d => ({ ...d, nuptk: d.nuptk || '-', ikatan_kerja: 'Dosen' }))
+      employees = data.map(d => {
+        const docCount = Number(d.docs_count || 0)
+        // Unified mapping: 1 or 6 = S3, 5 = S2, 4 = S1
+        let eduLabel = 'Lainnya'
+        const rawEdu = String(d.edu_code || '')
+        if (rawEdu === '1' || rawEdu === '6') eduLabel = 'S3'
+        else if (rawEdu === '5') eduLabel = 'S2'
+        else if (rawEdu === '4') eduLabel = 'S1'
+
+        return { 
+          ...d, 
+          docs_count: docCount,
+          nuptk: d.nuptk || '-', 
+          ikatan_kerja: 'Dosen',
+          pendidikan_terakhir: eduLabel,
+          data_quality: Math.round((docCount / 7) * 100)
+        }
+      })
 
     } else {
       // --- TENDIK LOGIC ---
@@ -63,12 +90,22 @@ export default defineEventHandler(async (event) => {
           k.nik, k.nama, k.tempat_lahir, 
           DATE_FORMAT(k.tanggal_lahir, '%d-%m-%Y') as tanggal_lahir, 
           k.jenis_kelamin, k.telepon, k.status_aktif,
+          (SELECT id_pendidikan FROM riwayat_pendidikan rp WHERE rp.nik = k.nik ORDER BY id_pendidikan DESC LIMIT 1) as edu_code,
           (SELECT b.nama_biro 
            FROM riwayat_jabatan rj 
            JOIN tmst_biro b ON rj.id_biro = b.id_biro 
            WHERE rj.nik = k.nik 
            ORDER BY rj.id DESC 
-           LIMIT 1) as unit
+           LIMIT 1) as unit,
+          (
+            COALESCE((CASE WHEN k.upload_ktp IS NOT NULL AND k.upload_ktp != '' THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM riwayat_pendidikan rp WHERE rp.nik = k.nik AND rp.upload_ijazah != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM riwayat_jabatan rj WHERE rj.nik = k.nik AND rj.upload_sk != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM riwayat_keluarga rk WHERE rk.nik = k.nik AND rk.upload_kk != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM tmst_pajak tp WHERE tp.nik = k.nik AND tp.upload_npwp != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM tmst_askes ta WHERE ta.nik = k.nik AND ta.upload_askes != '') THEN 1 ELSE 0 END), 0) +
+            COALESCE((CASE WHEN EXISTS(SELECT 1 FROM riwayat_pelatihan rpl WHERE rpl.nik = k.nik AND rpl.upload != '') THEN 1 ELSE 0 END), 0)
+          ) as docs_count
         FROM tmst_karyawan k
         WHERE k.nik NOT LIKE '0000%'
       `
@@ -95,12 +132,24 @@ export default defineEventHandler(async (event) => {
 
       sql += ` ORDER BY nama ASC LIMIT 500`
       const data: any[] = await prisma.$queryRawUnsafe(sql)
-      employees = data.map(k => ({
-        ...k,
-        unit: k.unit || 'Kantor Pusat',
-        nuptk: '-',
-        ikatan_kerja: 'Tenaga Kependidikan'
-      }))
+      employees = data.map(k => {
+        const docCount = Number(k.docs_count || 0)
+        let eduLabel = 'Lainnya'
+        const rawEdu = String(k.edu_code || '')
+        if (rawEdu === '1' || rawEdu === '6') eduLabel = 'S3'
+        else if (rawEdu === '5') eduLabel = 'S2'
+        else if (rawEdu === '4') eduLabel = 'S1'
+
+        return {
+          ...k,
+          docs_count: docCount,
+          unit: k.unit || 'Kantor Pusat',
+          nuptk: '-',
+          ikatan_kerja: 'Tenaga Kependidikan',
+          pendidikan_terakhir: eduLabel,
+          data_quality: Math.round((docCount / 7) * 100)
+        }
+      })
     }
 
     return { success: true, data: employees }

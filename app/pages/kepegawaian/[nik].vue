@@ -20,9 +20,12 @@ const handleEditSuccess = () => {
 const tabs = [
   { id: 'profil', label: 'Profil' },
   { id: 'resume', label: 'Resume Professional' },
-  { id: 'jabatan', label: 'Jabatan' },
+  { id: 'jabatan', label: 'Jabatan Struktural' },
+  { id: 'jafung', label: 'Jabatan Akademik' },
+  { id: 'pangkat', label: 'Kepangkatan' },
   { id: 'pendidikan', label: 'Pendidikan' },
   { id: 'intelligence', label: 'Career Intelligence ✨' },
+  { id: 'sertifikasi', label: 'Sertifikasi' },
   { id: 'pelatihan', label: 'Pelatihan' },
   { id: 'pengangkatan', label: 'Kepegawaian' },
   { id: 'keluarga', label: 'Keluarga' },
@@ -110,7 +113,7 @@ const getJafungName = (code: string | number) => {
         <!-- Navigation Tabs -->
         <div class="tabs-nav">
           <button 
-            v-for="tab in tabs" 
+            v-for="tab in (employeeData.data.type === 'dosen' || employeeData.data.ikatan_kerja == '1' ? tabs : tabs.filter(t => t.id !== 'sertifikasi' && t.id !== 'jafung'))" 
             :key="tab.id"
             @click="activeTab = tab.id"
             :class="['tab-item', { active: activeTab === tab.id }]"
@@ -159,6 +162,24 @@ const getJafungName = (code: string | number) => {
             />
           </div>
 
+          <!-- Jafung Section -->
+          <div v-if="activeTab === 'jafung'">
+            <KepegawaianJafungSection 
+              :nik="nik" 
+              :jafung-data="employeeData.data.riwayat_jafung || []"
+              @refresh="refresh"
+            />
+          </div>
+
+          <!-- Pangkat Section -->
+          <div v-if="activeTab === 'pangkat'">
+            <KepegawaianPangkatSection 
+              :nik="nik" 
+              :pangkat-data="employeeData.data.riwayat_pangkat || []" 
+              @refresh="refresh" 
+            />
+          </div>
+
           <!-- Pendidikan Section -->
           <div v-if="activeTab === 'pendidikan'">
             <KepegawaianEducationSection :nik="nik" :educationData="employeeData.data.riwayat_pendidikan" @refresh="refresh" />
@@ -167,6 +188,11 @@ const getJafungName = (code: string | number) => {
           <!-- Intelligence Section -->
           <div v-if="activeTab === 'intelligence'">
             <KepegawaianIntelligenceSection :employee="employeeData.data" />
+          </div>
+
+          <!-- Sertifikasi Section -->
+          <div v-if="activeTab === 'sertifikasi'">
+            <KepegawaianCertificationSection :nik="nik" @refresh="refresh" />
           </div>
 
           <!-- Pelatihan Section -->
@@ -300,24 +326,35 @@ const getJafungName = (code: string | number) => {
 
 .tabs-nav {
   display: flex;
-  gap: 0.5rem;
-  margin: 2rem 0;
-  background: #f1f5f9;
+  gap: 0.25rem;
+  margin: 1.5rem 0 2rem;
+  background: rgba(241, 245, 249, 0.8);
   padding: 0.4rem;
-  border-radius: 14px;
-  width: fit-content;
+  border-radius: 16px;
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.tabs-nav::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome, Safari and Opera */
 }
 
 .tab-item {
   background: transparent;
   border: none;
   color: #64748b;
-  padding: 0.8rem 1.75rem;
+  padding: 0.75rem 1.4rem;
   cursor: pointer;
-  white-space: nowrap;
+  flex-shrink: 0;
   font-weight: 700;
-  border-radius: 10px;
-  transition: all 0.3s;
+  font-size: 0.8rem;
+  border-radius: 12px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tab-content-wrapper {

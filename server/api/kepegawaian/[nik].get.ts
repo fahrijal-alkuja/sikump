@@ -12,20 +12,24 @@ export default defineEventHandler(async (event) => {
     
     // Check in tmst_karyawan (Tendik)
     const karyawan = await prisma.tmst_karyawan.findUnique({
-      where: { nik },
-      include: {
-        riwayat_jabatan: true,
-        riwayat_pendidikan: true,
-        riwayat_pelatihan: true,
-        riwayat_keluarga: true,
-        riwayat_pengangkatan: true,
-        tmst_pajak: true,
-        tmst_askes: true
-      }
+      where: { nik }
     })
 
     if (karyawan) {
-      // Fetch latest unit from riwayat_jabatan for Tendik
+      // Manual fetch for Tendik to avoid include errors
+      const [jabatan, pendidikan, pelatihan, keluarga, pengangkatan, pajak, askes, pangkat, sertifikasi] = await Promise.all([
+        prisma.riwayat_jabatan.findMany({ where: { nik } }),
+        prisma.riwayat_pendidikan.findMany({ where: { nik } }),
+        prisma.riwayat_pelatihan.findMany({ where: { nik } }),
+        prisma.riwayat_keluarga.findMany({ where: { nik } }),
+        prisma.riwayat_pengangkatan.findMany({ where: { nik } }),
+        prisma.tmst_pajak.findMany({ where: { nik } }),
+        prisma.tmst_askes.findMany({ where: { nik } }),
+        prisma.tmst_pangkat.findMany({ where: { nik } }),
+        prisma.tmst_sertifikasi.findMany({ where: { nik } })
+      ])
+
+      // Fetch latest unit
       const latestJabatan: any = await prisma.$queryRaw`
         SELECT b.nama_biro as unit 
         FROM riwayat_jabatan rj 
@@ -37,7 +41,16 @@ export default defineEventHandler(async (event) => {
       data = { 
         ...karyawan, 
         type: 'tendik',
-        unit: latestJabatan[0]?.unit || 'Kantor Pusat'
+        unit: latestJabatan[0]?.unit || 'Kantor Pusat',
+        riwayat_jabatan: jabatan,
+        riwayat_pendidikan: pendidikan,
+        riwayat_pelatihan: pelatihan,
+        riwayat_keluarga: keluarga,
+        riwayat_pengangkatan: pengangkatan,
+        tmst_pajak: pajak,
+        tmst_askes: askes,
+        riwayat_pangkat: pangkat,
+        riwayat_sertifikasi: sertifikasi
       }
     } else {
       // Check in tmst_dosen using Raw SQL
@@ -51,7 +64,7 @@ export default defineEventHandler(async (event) => {
 
       if (dosen) {
         // Manually fetch related data
-        const [jabatan, pendidikan, pelatihan, keluarga, pengangkatan, pajak, askes, jafung] = await Promise.all([
+        const [jabatan, pendidikan, pelatihan, keluarga, pengangkatan, pajak, askes, jafung, pangkat, sertifikasi] = await Promise.all([
           prisma.riwayat_jabatan.findMany({ where: { nik } }),
           prisma.riwayat_pendidikan.findMany({ where: { nik } }),
           prisma.riwayat_pelatihan.findMany({ where: { nik } }),
@@ -60,7 +73,9 @@ export default defineEventHandler(async (event) => {
           prisma.tmst_pajak.findMany({ where: { nik } }),
           prisma.tmst_askes.findMany({ where: { nik } }),
           // @ts-ignore
-          prisma.riwayat_jafung.findMany({ where: { nik } })
+          prisma.riwayat_jafung.findMany({ where: { nik } }),
+          prisma.tmst_pangkat.findMany({ where: { nik } }),
+          prisma.tmst_sertifikasi.findMany({ where: { nik } })
         ])
 
         data = {
@@ -75,7 +90,9 @@ export default defineEventHandler(async (event) => {
           riwayat_pengangkatan: pengangkatan,
           tmst_pajak: pajak,
           tmst_askes: askes,
-          riwayat_jafung: jafung
+          riwayat_jafung: jafung,
+          riwayat_pangkat: pangkat,
+          riwayat_sertifikasi: sertifikasi
         }
       }
     }

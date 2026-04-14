@@ -45,12 +45,21 @@ export default defineEventHandler(async (event) => {
     Object.assign(data, body)
   }
 
-  // Formatting
-  if (data.tmt && data.tmt.includes('-') && data.tmt.split('-')[0].length === 4) {
-    data.tmt = data.tmt.split('-').reverse().join('-')
+  // Safe Formatting & Conversion
+  for (const key in data) {
+    if (['tanggal_keluar', 'tanggal_sk'].includes(key)) {
+      if (data[key] && data[key] !== 'undefined' && data[key] !== 'null' && data[key] !== '') {
+        const d = new Date(data[key])
+        if (!isNaN(d.getTime())) data[key] = d
+        else delete data[key]
+      } else {
+        data[key] = null
+      }
+    }
+    if (['id_pendidikan', 'id_pangkat'].includes(key)) {
+      if (data[key]) data[key] = parseInt(data[key])
+    }
   }
-  if (data.id_pendidikan) data.id_pendidikan = parseInt(data.id_pendidikan)
-  if (data.id_jafung) data.id_jafung = parseInt(data.id_jafung)
   
   // Exclude ID from update body
   delete data.id
