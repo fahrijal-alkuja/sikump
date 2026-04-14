@@ -9,21 +9,20 @@ datasource db {
 }
 
 model tmst_karyawan {
-  nik           String    @id @db.VarChar(20)
-  nama          String?   @db.VarChar(50)
-  tempat_lahir  String?   @db.Char(20)
-  tanggal_lahir DateTime? @db.Date
-  jenis_kelamin String?   @db.Char(1)
-  agama         String?   @db.VarChar(255)
-  nomor_ktp     String?   @db.VarChar(25)
-  ikatan_kerja  String?   @db.Char(1)
-  alamat        String?   @db.VarChar(255)
-  telepon       String?   @db.VarChar(50)
-  pp            String?   @db.VarChar(255)
-  status_aktif  String?   @db.Char(2)
-  upload_ktp    String?   @db.VarChar(255)
-  nama_ibu_kandung String? @db.VarChar(100)
-
+  nik                  String                 @id @db.VarChar(20)
+  nama                 String?                @db.VarChar(50)
+  tempat_lahir         String?                @db.Char(20)
+  tanggal_lahir        DateTime?              @db.Date
+  jenis_kelamin        String?                @db.Char(1)
+  agama                String?                @db.VarChar(255)
+  nomor_ktp            String?                @db.VarChar(25)
+  ikatan_kerja         String?                @db.Char(1)
+  alamat               String?                @db.VarChar(255)
+  telepon              String?                @db.VarChar(50)
+  pp                   String?                @db.VarChar(255)
+  status_aktif         String?                @db.Char(2)
+  upload_ktp           String?                @db.VarChar(255)
+  nama_ibu_kandung     String?                @db.VarChar(100)
   riwayat_jabatan      riwayat_jabatan[]
   riwayat_pelatihan    riwayat_pelatihan[]
   riwayat_pendidikan   riwayat_pendidikan[]
@@ -36,93 +35,86 @@ model tmst_karyawan {
 }
 
 model riwayat_jabatan {
-  id             Int       @id @default(autoincrement())
-  nik            String?   @db.VarChar(100)
-  id_biro        String?   @db.VarChar(100)
-  id_jabatan     String?   @db.VarChar(100)
-  no_sk          String?   @db.VarChar(100)
-  tmt            String?   @db.VarChar(100)
-  tanggal_sk     DateTime? @db.Date
-  ikatan_kerja   String?   @db.VarChar(100)
-  tanggal_keluar DateTime? @db.Date
-  upload_sk      String?   @db.VarChar(100)
-  is_aktiv       String?   @db.Char(2)
-  status         String?   @db.Char(4)
-
-  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+  id             Int            @id @default(autoincrement())
+  nik            String?        @db.VarChar(100)
+  id_biro        String?        @db.VarChar(100)
+  id_jabatan     String?        @db.VarChar(100)
+  no_sk          String?        @db.VarChar(100)
+  tmt            String?        @db.VarChar(100)
+  tanggal_sk     DateTime?      @db.Date
+  ikatan_kerja   String?        @db.VarChar(100)
+  tanggal_keluar DateTime?      @db.Date
+  upload_sk      String?        @db.VarChar(100)
+  is_aktiv       String?        @db.Char(2)
+  status         String?        @db.Char(4)
+  karyawan       tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model riwayat_pelatihan {
-  id            Int       @id @default(autoincrement())
-  nik           String?   @db.VarChar(100)
-  nama_diklat   String?   @db.VarChar(100)
-  no_sertifikat String?   @db.VarChar(100)
-  tahun         String?   @db.VarChar(100)
-  tempat        String?   @db.VarChar(100)
-  tanggal_mulai DateTime? @db.Date
-  upload        String?   @db.VarChar(100)
-
-  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+  id            Int            @id @default(autoincrement())
+  nik           String?        @db.VarChar(100)
+  nama_diklat   String?        @db.VarChar(100)
+  no_sertifikat String?        @db.VarChar(100)
+  tahun         String?        @db.VarChar(100)
+  tempat        String?        @db.VarChar(100)
+  tanggal_mulai DateTime?      @db.Date
+  upload        String?        @db.VarChar(100)
+  karyawan      tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model riwayat_pendidikan {
-  id              Int       @id @default(autoincrement())
-  nik             String?   @db.VarChar(100)
+  id              Int            @id @default(autoincrement())
+  nik             String?        @db.VarChar(100)
   id_pendidikan   Int?
-  asal_pendidikan String?   @db.VarChar(100)
-  tahun_lulus     String?   @db.VarChar(100)
-  upload_ijazah   String?   @db.VarChar(100)
-  last_upload     DateTime? @updatedAt @db.Timestamp(0)
-
-  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+  asal_pendidikan String?        @db.VarChar(100)
+  tahun_lulus     String?        @db.VarChar(100)
+  upload_ijazah   String?        @db.VarChar(100)
+  last_upload     DateTime?      @updatedAt @db.Timestamp(0)
+  karyawan        tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model riwayat_keluarga {
-  id_keluarga       Int       @id @default(autoincrement())
-  nik               String?   @db.VarChar(100)
-  status_perkawinan String?   @db.VarChar(100)
-  id_anak           String?   @db.VarChar(100)
-  nama_ismi         String?   @db.VarChar(100)
-  pekerjaan_ismi    String?   @db.VarChar(100)
-  upload_kk         String?   @db.VarChar(100)
-  last_upload       DateTime? @updatedAt @db.Timestamp(0)
-
-  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+  id_keluarga       Int            @id @default(autoincrement())
+  nik               String?        @db.VarChar(100)
+  status_perkawinan String?        @db.VarChar(100)
+  id_anak           String?        @db.VarChar(100)
+  nama_ismi         String?        @db.VarChar(100)
+  pekerjaan_ismi    String?        @db.VarChar(100)
+  upload_kk         String?        @db.VarChar(100)
+  last_upload       DateTime?      @updatedAt @db.Timestamp(0)
+  karyawan          tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model riwayat_pengangkatan {
-  id                 Int       @id @default(autoincrement())
-  nik                String?   @db.VarChar(100)
-  status_kepegawaian String?   @db.VarChar(100)
-  status_keaktivan   String?   @db.VarChar(100)
-  tmt                String?   @db.VarChar(100)
-  penempatan         String?   @db.VarChar(100)
-  nomor_sk           String?   @db.VarChar(100)
-  lembaga_pengangkat String?   @db.VarChar(100)
-  sumber_gaji        String?   @db.VarChar(100)
-  upload_sk          String?   @db.VarChar(100)
-  last_upload        DateTime? @updatedAt @db.Timestamp(0)
-
-  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+  id                 Int            @id @default(autoincrement())
+  nik                String?        @db.VarChar(100)
+  status_kepegawaian String?        @db.VarChar(100)
+  status_keaktivan   String?        @db.VarChar(100)
+  tmt                String?        @db.VarChar(100)
+  penempatan         String?        @db.VarChar(100)
+  nomor_sk           String?        @db.VarChar(100)
+  lembaga_pengangkat String?        @db.VarChar(100)
+  sumber_gaji        String?        @db.VarChar(100)
+  upload_sk          String?        @db.VarChar(100)
+  last_upload        DateTime?      @updatedAt @db.Timestamp(0)
+  karyawan           tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model tmst_pajak {
-  id          Int     @id @default(autoincrement())
-  nik         String? @db.VarChar(102)
-  nomor_npwp  String? @db.VarChar(102)
-  upload_npwp String? @db.VarChar(102)
-
-  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+  id          Int            @id @default(autoincrement())
+  nik         String?        @db.VarChar(102)
+  nomor_npwp  String?        @db.VarChar(102)
+  upload_npwp String?        @db.VarChar(102)
+  karyawan    tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model tmst_askes {
-  id           Int     @id @default(autoincrement())
-  nik          String? @db.VarChar(100)
-  no_askes     String? @db.VarChar(100)
-  nama_askes   String? @db.VarChar(100)
-  upload_askes String? @db.VarChar(100)
-
-  karyawan tmst_karyawan? @relation(fields: [nik], references: [nik])
+  id           Int            @id @default(autoincrement())
+  nik          String?        @db.VarChar(100)
+  no_askes     String?        @db.VarChar(100)
+  nama_askes   String?        @db.VarChar(100)
+  upload_askes String?        @db.VarChar(100)
+  karyawan     tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model tmst_biro {
@@ -285,26 +277,26 @@ model riwayat_jafung {
 }
 
 model tmst_pangkat {
-  id          Int       @id @default(autoincrement())
-  nik         String?   @db.VarChar(255)
-  pangkat     String?   @db.VarChar(255)
-  no_sk       String?   @db.VarChar(255)
-  tmt         String?   @db.VarChar(255)
-  upload_sk   String?   @db.VarChar(255)
-  last_update DateTime? @db.Timestamp(0)
+  id          Int            @id @default(autoincrement())
+  nik         String?        @db.VarChar(255)
+  pangkat     String?        @db.VarChar(255)
+  no_sk       String?        @db.VarChar(255)
+  tmt         String?        @db.VarChar(255)
+  upload_sk   String?        @db.VarChar(255)
+  last_update DateTime?      @db.Timestamp(0)
   karyawan    tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
 model tmst_sertifikasi {
-  id                    Int       @id @default(autoincrement())
-  nik                   String?   @db.VarChar(255)
-  jenis_sertifikasi     String?   @db.VarChar(255)
-  bidang_studi          String?   @db.VarChar(255)
-  no_reg_sertifikasi    String?   @db.VarChar(255)
-  no_sk                 String?   @db.VarChar(255)
-  tahun                 String?   @db.VarChar(255)
-  upload_sk_sertifikasi String?   @db.VarChar(255)
-  last_update           DateTime? @db.Timestamp(0)
+  id                    Int            @id @default(autoincrement())
+  nik                   String?        @db.VarChar(255)
+  jenis_sertifikasi     String?        @db.VarChar(255)
+  bidang_studi          String?        @db.VarChar(255)
+  no_reg_sertifikasi    String?        @db.VarChar(255)
+  no_sk                 String?        @db.VarChar(255)
+  tahun                 String?        @db.VarChar(255)
+  upload_sk_sertifikasi String?        @db.VarChar(255)
+  last_update           DateTime?      @db.Timestamp(0)
   karyawan              tmst_karyawan? @relation(fields: [nik], references: [nik])
 }
 
@@ -352,4 +344,3 @@ model user_sub_menu {
   icon     String? @db.VarChar(102)
   is_activ Int?
 }
-
