@@ -78,9 +78,16 @@ const handleExportPDF = async () => {
   doc.text(`NIK: ${e.nik || '-'}`, 60, 68)
   doc.text(`Unit: ${e.unit || '-'}`, 60, 73)
   
-  // Bio Table
+  // Bio Table - Improved Date Formatting
+  const formatDate = (date: string) => {
+    if (!date) return '-'
+    const d = new Date(date)
+    if (isNaN(d.getTime())) return date
+    return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  }
+
   const bioData = [
-    ['Tempat, Tgl Lahir', `: ${e.tempat_lahir || '-'}, ${e.tanggal_lahir || '-'}`],
+    ['Tempat, Tgl Lahir', `: ${e.tempat_lahir || '-'}, ${formatDate(e.tanggal_lahir)}`],
     ['Jenis Kelamin', `: ${e.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'}`],
     ['Telepon', `: ${e.telepon || '-'}`],
     ['Alamat', `: ${e.alamat || '-'}`]
@@ -96,12 +103,13 @@ const handleExportPDF = async () => {
   })
 
   // --- TABLES SECTIONS ---
-  
+  let currentY = (doc as any).lastAutoTable.finalY + 12
+
   // 1. Pendidikan
   doc.setFontSize(11)
   doc.setFont('helvetica', 'bold')
-  doc.text('RIWAYAT PENDIDIKAN', 15, 115)
-  doc.line(15, 117, 60, 117)
+  doc.text('RIWAYAT PENDIDIKAN', 15, currentY)
+  doc.line(15, currentY + 2, 60, currentY + 2)
 
   const eduRows = (e.riwayat_pendidikan || []).map((edu: any) => [
     edu.id_pendidikan === 4 ? 'S1' : edu.id_pendidikan === 5 ? 'S2' : edu.id_pendidikan === 6 ? 'S3' : 'Diploma/Lainnya',
@@ -112,18 +120,18 @@ const handleExportPDF = async () => {
   autoTable(doc, {
     head: [['JENJANG', 'INSTITUSI', 'LULUS']],
     body: eduRows.length ? eduRows : [['-', 'Data tidak tersedia', '-']],
-    startY: 122,
+    startY: currentY + 6,
     theme: 'striped',
     headStyles: { fillColor: [71, 85, 105] },
     styles: { fontSize: 8.5 }
   })
 
   // 2. Jabatan
-  const nextY = (doc as any).lastAutoTable.finalY + 15
+  currentY = (doc as any).lastAutoTable.finalY + 12
   doc.setFontSize(11)
   doc.setFont('helvetica', 'bold')
-  doc.text('RIWAYAT JABATAN & FUNGSIONAL', 15, nextY)
-  doc.line(15, nextY + 2, 85, nextY + 2)
+  doc.text('RIWAYAT JABATAN & FUNGSIONAL', 15, currentY)
+  doc.line(15, currentY + 2, 85, currentY + 2)
 
   const jobRows = (e.riwayat_jabatan || []).map((j: any) => [
     j.no_sk || '-',
@@ -134,20 +142,71 @@ const handleExportPDF = async () => {
   autoTable(doc, {
     head: [['NO. SK', 'TMT', 'KETERANGAN']],
     body: jobRows.length ? jobRows : [['-', '-', 'Data tidak tersedia']],
-    startY: nextY + 6,
+    startY: currentY + 6,
     theme: 'grid',
     headStyles: { fillColor: [30, 41, 59] },
     styles: { fontSize: 8.5 }
   })
 
+  // 3. Pelatihan & Sertifikasi (Combined for dynamic space)
+  currentY = (doc as any).lastAutoTable.finalY + 12
+  
+  // New Page check
+  if (currentY > 240) { doc.addPage(); currentY = 20 }
+
+  doc.setFontSize(11)
+  doc.setFont('helvetica', 'bold')
+  doc.text('PELATIHAN & SERTIFIKASI', 15, currentY)
+  doc.line(15, currentY + 2, 70, currentY + 2)
+
+  const trainingRows = [
+    ...(e.riwayat_pelatihan || []).map((t: any) => [t.nama_diklat, t.tempat, t.tahun]),
+    ...(e.riwayat_sertifikasi || []).map((s: any) => [s.jenis_sertifikasi, s.bidang_studi, s.tahun])
+  ]
+
+  autoTable(doc, {
+    head: [['NAMA KEGIATAN / SERTIFIKASI', 'PENYELENGGARA / BIDANG', 'TAHUN']],
+    body: trainingRows.length ? trainingRows : [['Data tidak tersedia', '-', '-']],
+    startY: currentY + 6,
+    theme: 'striped',
+    headStyles: { fillColor: [79, 70, 229] },
+    styles: { fontSize: 8.5 }
+  })
+
+  // 4. Riwayat Keluarga
+  currentY = (doc as any).lastAutoTable.finalY + 12
+  if (currentY > 240) { doc.addPage(); currentY = 20 }
+
+  doc.setFontSize(11)
+  doc.setFont('helvetica', 'bold')
+  doc.text('DATA KELUARGA', 15, currentY)
+  doc.line(15, currentY + 2, 50, currentY + 2)
+
+  const familyRows = (e.riwayat_keluarga || []).map((f: any) => [
+    f.nama_ismi || '-',
+    f.status_perkawinan || '-',
+    f.pekerjaan_ismi || '-'
+  ])
+
+  autoTable(doc, {
+    head: [['NAMA PASANGAN', 'STATUS', 'PEKERJAAN']],
+    body: familyRows.length ? familyRows : [['-', 'Data tidak tersedia', '-']],
+    startY: currentY + 6,
+    theme: 'grid',
+    headStyles: { fillColor: [15, 23, 42] },
+    styles: { fontSize: 8.5 }
+  })
+
   // --- FOOTER ---
-  const finalY = (doc as any).lastAutoTable.finalY + 30
-  doc.setFontSize(9)
-  doc.setFont('helvetica', 'normal')
+  const finalY = (doc as any).lastAutoTable.finalY + 25
+  doc.setFontSize(8)
+  doc.setTextColor(148, 163, 184)
   doc.text(`Dicetak secara sistem pada: ${new Date().toLocaleString('id-ID')}`, 15, finalY)
   
+  doc.setTextColor(30, 41, 59)
+  doc.setFontSize(9)
   doc.text('Petugas Administrasi,', pageWidth - 60, finalY)
-  doc.text('____________________', pageWidth - 60, finalY + 25)
+  doc.text('____________________', pageWidth - 60, finalY + 20)
 
   doc.save(`CV_${e.nama?.replace(/ /g, '_')}.pdf`)
 }
