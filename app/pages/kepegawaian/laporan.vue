@@ -128,29 +128,88 @@ const handleExport = async (format: 'excel' | 'pdf') => {
 
 const generateGenericPDF = (title: string, data: any[]) => {
   const doc = new jsPDF('l', 'mm', 'a4')
-  doc.setFontSize(18)
-  doc.setTextColor(30, 41, 59)
-  doc.text(title, 14, 15)
+  const pageWidth = doc.internal.pageSize.getWidth()
+  
+  // --- PREMIUM HEADER ---
+  doc.setFillColor(99, 102, 241) // Primary Color
+  doc.rect(0, 0, pageWidth, 40, 'F')
+  
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(22)
+  doc.setFont('helvetica', 'bold')
+  doc.text('UNIVERSITAS KUTAI KARTANEGARA', 14, 18)
   
   doc.setFontSize(10)
-  doc.setTextColor(100, 116, 139)
-  doc.text(`Kriteria: ${Object.values(filters.value).filter(v => !!v).join(', ') || 'Semua Data'}`, 14, 22)
-  doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, 14, 27)
+  doc.setFont('helvetica', 'normal')
+  doc.text('Sistem Informasi Kepegawaian & Manajemen Personalia (SIKUMP)', 14, 25)
+  doc.text(`Kriteria: ${Object.values(filters.value).filter(v => !!v).join(', ') || 'Semua Data'}`, 14, 30)
   
-  const headers = [Object.keys(data[0]).map(h => h.replace('_', ' ').toUpperCase())]
-  const rows = data.map((obj: any) => Object.values(obj)) as any[][]
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(9)
+  doc.text(`Dicetak pada: ${new Date().toLocaleString('id-ID')}`, pageWidth - 14, 18, { align: 'right' })
 
+  // --- CONTENT TITLE ---
+  doc.setTextColor(30, 41, 59)
+  doc.setFontSize(16)
+  doc.setFont('helvetica', 'bold')
+  doc.text(title.toUpperCase(), 14, 52)
+  
+  // --- DATA MAPPING ---
+  // Define only relevant columns for professional look
+  const headers = [['NO', 'NIK', 'NAMA LENGKAP', 'PENDIDIKAN', 'UNIT / PRODI', 'TTL', 'JK', 'STATUS']]
+  
+  const rows = data.map((emp: any, index: number) => [
+    index + 1,
+    emp.nik,
+    emp.nama,
+    emp.pendidikan_terakhir || '-',
+    emp.unit || '-',
+    `${emp.tempat_lahir || ''}${emp.tempat_lahir && emp.tanggal_lahir ? ', ' : ''}${emp.tanggal_lahir || '-'}`,
+    emp.jenis_kelamin === 'L' ? 'Laki-laki' : emp.jenis_kelamin === 'P' ? 'Perempuan' : '-',
+    emp.status_aktif === '1' ? 'Aktif' : emp.status_aktif === '2' ? 'Tugas Belajar' : 'Non-Aktif'
+  ])
+
+  // --- TABLE STYLING ---
   autoTable(doc, {
     head: headers,
     body: rows,
-    startY: 33,
-    theme: 'striped',
-    styles: { fontSize: 8, cellPadding: 3 },
-    headStyles: { fillColor: [99, 102, 241], fontStyle: 'bold' },
-    margin: { top: 30 }
+    startY: 60,
+    theme: 'grid',
+    styles: { 
+      fontSize: 8, 
+      cellPadding: 4, 
+      valign: 'middle',
+      font: 'helvetica'
+    },
+    headStyles: { 
+      fillColor: [30, 41, 59], 
+      textColor: [255, 255, 255],
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' }, // No
+      1: { cellWidth: 35 }, // NIK
+      2: { cellWidth: 60, fontStyle: 'bold' }, // Nama
+      3: { cellWidth: 25, halign: 'center' }, // Pendidikan
+      4: { cellWidth: 50 }, // Unit
+      5: { cellWidth: 45 }, // TTL
+      6: { cellWidth: 20, halign: 'center' }, // JK
+      7: { cellWidth: 25, halign: 'center' }  // Status
+    },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    margin: { left: 14, right: 14, bottom: 20 },
+    didDrawPage: (data) => {
+      // Footer
+      const str = 'Halaman ' + doc.internal.getNumberOfPages()
+      doc.setFontSize(8)
+      doc.setTextColor(148, 163, 184)
+      doc.text(str, pageWidth - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' })
+      doc.text('SIKUMP - Universitas Kutai Kartanegara', 14, doc.internal.pageSize.getHeight() - 10)
+    }
   })
 
-  doc.save(`${title.toLowerCase().replace(/ /g, '_')}.pdf`)
+  doc.save(`${title.toLowerCase().replace(/ /g, '_')}_${Date.now()}.pdf`)
 }
 </script>
 
