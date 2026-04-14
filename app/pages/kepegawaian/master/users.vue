@@ -321,24 +321,36 @@ const handleExecuteDelete = async () => {
 .modal-form-body { padding: 30px; display: flex; flex-direction: column; gap: 15px; }
 .form-double-col { display: flex; gap: 15px; }
 .form-double-col .input-set { flex: 1; }
-.input-set label { display: block; font-size: 10px; font-weight: 900; color: #cbd5e1; text-transform: uppercase; margin-bottom: 6px; padding-left: 5px; }
-.standard-input, .standard-select { width: 100%; padding: 12px 18px; background: #f8fafc; border: 2px solid transparent; border-radius: 16px; font-size: 15px; font-weight: 700; color: #334155; transition: 0.3s; }
-.standard-input:focus { outline: none; border-color: #4f46e5; background: white; }
+.input-set label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; padding-left: 5px; letter-spacing: 0.5px; }
+.standard-input, .standard-select { 
+  width: 100%; padding: 14px 20px; background: #f1f5f9; border: 2px solid #f1f5f9; border-radius: 18px; 
+  font-size: 15px; font-weight: 700; color: #1e293b; transition: all 0.3s; appearance: none;
+}
+.standard-input::placeholder { color: #cbd5e1; }
+.standard-input:focus, .standard-select:focus { outline: none; border-color: #4f46e5; background: white; box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.05); }
 
-.toggle-status-bar { background: #f8fafc; padding: 15px; border-radius: 20px; margin-top: 5px; }
-.toggle-control-group { display: flex; align-items: center; gap: 12px; }
-.ios-toggle { position: relative; width: 48px; height: 26px; }
+.standard-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.25rem center;
+  background-size: 1rem;
+}
+
+.toggle-status-bar { background: #f8fafc; padding: 18px; border-radius: 22px; margin-top: 10px; border: 1px solid #f1f5f9; }
+.toggle-control-group { display: flex; align-items: center; gap: 14px; }
+.ios-toggle { position: relative; width: 52px; height: 28px; }
 .ios-toggle input { opacity: 0; width: 0; height: 0; }
-.ios-slider { position: absolute; inset: 0; background: #e2e8f0; border-radius: 26px; transition: 0.4s; cursor: pointer; }
-.ios-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.4s; }
+.ios-slider { position: absolute; inset: 0; background: #e2e8f0; border-radius: 30px; transition: 0.4s; cursor: pointer; }
+.ios-slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.4s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 input:checked + .ios-slider { background: #10b981; }
-input:checked + .ios-slider:before { transform: translateX(22px); }
-.toggle-label-text { font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; }
+input:checked + .ios-slider:before { transform: translateX(24px); }
+.toggle-label-text { font-size: 12px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: -0.2px; }
 
-.modal-form-footer { padding: 20px 30px 30px; display: flex; gap: 12px; }
-.btn-confirm-modal { flex: 2; padding: 16px; background: #4f46e5; color: white; border-radius: 18px; border: none; font-weight: 900; font-size: 15px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(79,70,229,0.3); }
-.btn-confirm-modal:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(79,70,229,0.4); }
-.btn-cancel-modal { flex: 1; padding: 16px; background: #f1f5f9; color: #64748b; border-radius: 18px; border: none; font-weight: 800; cursor: pointer; }
+.modal-form-footer { padding: 10px 30px 30px; display: flex; gap: 14px; }
+.btn-confirm-modal { flex: 2; padding: 16px; background: #4f46e5; color: white; border-radius: 20px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 30px -5px rgba(79, 70, 229, 0.4); }
+.btn-confirm-modal:hover { transform: translateY(-3px); box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.5); }
+.btn-cancel-modal { flex: 1; padding: 16px; background: #f1f5f9; color: #64748b; border-radius: 20px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.3s; }
+.btn-cancel-modal:hover { background: #e2e8f0; }
 
 /* Alert Modal */
 .alert-surface-box { width: 100%; max-width: 400px; background: white; border-radius: 40px; padding: 40px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.3); }
