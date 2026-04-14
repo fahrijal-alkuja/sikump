@@ -321,9 +321,11 @@ const handleExecuteDelete = async () => {
 .modal-main-title { font-size: 24px; font-weight: 900; color: #1e293b; letter-spacing: -1px; margin: 0; }
 .modal-sub-title { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
 
-.modal-form-body { padding: 40px 60px; display: flex; flex-direction: column; gap: 30px; }
-.form-double-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; }
-.form-double-col .input-set { width: 100%; }
+.modal-form-body { padding: 45px 60px; display: flex; flex-direction: column; gap: 35px; }
+.form-double-col { display: grid; grid-template-columns: 1fr 1fr; column-gap: 50px; width: 100%; }
+.form-double-col .input-set:first-child { margin-right: 15px; }
+.form-double-col .input-set:last-child { margin-left: 15px; }
+.form-double-col .input-set { width: auto; }
 .input-set { display: flex; flex-direction: column; width: 100%; margin-bottom: 5px; }
 .input-set label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; padding-left: 8px; letter-spacing: 0.8px; }
 .standard-input, .standard-select { 
