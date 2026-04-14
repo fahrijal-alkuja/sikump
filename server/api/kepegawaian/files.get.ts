@@ -1,14 +1,24 @@
-import { PrismaClient } from '@prisma/client'
 import { defineEventHandler } from 'h3'
-
-const prisma = new PrismaClient()
+import { prisma } from '../../utils/prisma'
+import { requireAuth } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    const session = requireAuth(event)
+    requireAuth(event)
     
     // Collecting ALL digital assets from ALL relevant tables for both Dosen and Tendik
     const files: any = await prisma.$queryRawUnsafe(`
+      -- KTP & PROFILE (NEWLY ADDED)
+      SELECT upload_ktp as file_name, 'KTP' as category, nama_dosen as owner_name, 'KTP' as folder 
+      FROM tmst_dosen WHERE upload_ktp != '' AND upload_ktp IS NOT NULL
+      
+      UNION ALL
+      
+      SELECT upload_ktp as file_name, 'KTP' as category, nama as owner_name, 'KTP' as folder 
+      FROM tmst_karyawan WHERE upload_ktp != '' AND upload_ktp IS NOT NULL
+      
+      UNION ALL
+
       -- EDUCATION (DOZEN & TENDIK)
       SELECT upload_ijazah as file_name, 'Ijazah' as category, COALESCE(nullif(m.nama_dosen, ''), k.nama) as owner_name, 'pendidikan' as folder 
       FROM riwayat_pendidikan r 
@@ -78,7 +88,7 @@ export default defineEventHandler(async (event) => {
       WHERE upload_askes != '' AND upload_askes IS NOT NULL
 
       ORDER BY file_name DESC
-      LIMIT 500
+      LIMIT 1000
     `)
 
     return { success: true, data: files }

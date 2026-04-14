@@ -26,7 +26,9 @@ const getFileIcon = (fileName: string) => {
   <div class="berkas-page scrollbar-hide">
     <div class="page-header glass-card">
       <div class="title-section">
-        <div class="icon-dossier">📂</div>
+        <div class="icon-dossier">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        </div>
         <div>
           <h1>Digital Dossier</h1>
           <p class="subtitle">Arsip dokumen digital terintegrasi SI-KUMP</p>
@@ -34,7 +36,7 @@ const getFileIcon = (fileName: string) => {
       </div>
       <div class="header-actions">
         <div class="search-box">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
           <input v-model="search" type="text" placeholder="Cari berkas, pemilik, atau kategori..." class="glass-input" />
         </div>
       </div>
@@ -64,7 +66,9 @@ const getFileIcon = (fileName: string) => {
       </div>
 
       <div v-if="files.length === 0" class="empty-state-lux">
-        <div class="empty-visual">🕳️</div>
+        <div class="empty-visual">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+        </div>
         <h3>Dossier Kosong</h3>
         <p>Belum ada berkas digital yang terdeteksi di sistem.</p>
       </div>
@@ -85,12 +89,14 @@ const getFileIcon = (fileName: string) => {
 }
 
 .title-section { display: flex; align-items: center; gap: 1.5rem; }
-.icon-dossier { font-size: 3rem; }
+.icon-dossier { width: 48px; height: 48px; color: var(--primary); }
+.icon-dossier svg { width: 100%; height: 100%; }
 h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 0.2rem; }
 .subtitle { color: var(--text-muted); font-size: 0.95rem; }
 
 .search-box { position: relative; width: 350px; }
-.search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+.search-icon { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; opacity: 0.5; color: var(--primary); }
+.search-icon svg { width: 100%; height: 100%; }
 .glass-input { 
   background: rgba(255,255,255,0.05); 
   border: 1px solid var(--glass-border); 
@@ -176,7 +182,8 @@ h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 0
   padding: 8rem 0;
   text-align: center;
 }
-.empty-visual { font-size: 5rem; margin-bottom: 1rem; opacity: 0.3; }
+.empty-visual { width: 120px; height: 120px; margin: 0 auto 2rem; color: var(--primary); }
+.empty-visual svg { width: 100%; height: 100%; }
 .empty-state-lux h3 { font-size: 2rem; color: #fff; margin-bottom: 0.5rem; }
 .empty-state-lux p { color: var(--text-muted); }
 </style>
