@@ -255,7 +255,8 @@ const handleLogout = async () => {
 }
 
 /* Dropdown Styles */
-.nav-dropdown { position: relative; display: inline-block; cursor: pointer; padding-bottom: 1rem; margin-bottom: -1rem; }
+.nav-dropdown { position: relative; display: inline-block; cursor: pointer; }
+.nav-dropdown::after { content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 1.5rem; background: transparent; }
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(20px);
@@ -266,12 +267,18 @@ const handleLogout = async () => {
 .dropdown-content {
   display: none;
   position: absolute;
-  top: 100%;
+  top: calc(100% + 1rem);
   left: 0;
   min-width: 220px;
   padding: 0.5rem;
   z-index: 200;
   border-radius: 12px;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .nav-dropdown:hover .dropdown-content { display: block; }
