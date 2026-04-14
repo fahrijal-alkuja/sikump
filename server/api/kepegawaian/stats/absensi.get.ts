@@ -69,11 +69,15 @@ export default defineEventHandler(async (event) => {
       const uId = log.userId
       if (!uId) return
       
-      if (!logMap[uId]) logMap[uId] = { count: 0, lates: 0 }
+      if (!logMap[uId]) {
+        logMap[uId] = { count: 0, lates: 0 }
+      }
+      
+      const entry = logMap[uId]!
       if (log.statusOut === '1') {
-         logMap[uId].count++
+         entry.count++
          if (log.keteranganIn === 'Telat') {
-           logMap[uId].lates++
+           entry.lates++
          }
       }
     })
