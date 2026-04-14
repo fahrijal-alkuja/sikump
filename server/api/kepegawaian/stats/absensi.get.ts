@@ -94,8 +94,8 @@ export default defineEventHandler(async (event) => {
     const jabList = await prisma.tref_jabatan.findMany()
     const jabMap: Record<string, string> = {}
     jabList.forEach(j => {
-      jabMap[String(j.id)] = j.nama_jabatan
-      if (j.id_jabatan) jabMap[j.id_jabatan] = j.nama_jabatan
+      const name = j.nama_jabatan || 'Unknown'
+      jabMap[String(j.id_jabatan)] = name
     })
 
     // Final Assembly
