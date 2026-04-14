@@ -2,6 +2,7 @@ import { defineEventHandler, readBody, createError } from 'h3'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../../utils/prisma'
 import { requireAdmin } from '../../../utils/auth'
+import { logActivity } from '../../../utils/logger'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -42,6 +43,9 @@ export default defineEventHandler(async (event) => {
         await prisma.$queryRawUnsafe(`INSERT INTO users_groups (user_id, group_id) VALUES (${id}, ${group[0].id})`)
       }
     }
+
+    // Log activity
+    await logActivity(event, 'UPDATE_USER', username, `Memperbarui profil ${first_name} ${last_name} (${role})`)
 
     return { success: true, message: 'User updated successfully' }
   } catch (error: any) {
