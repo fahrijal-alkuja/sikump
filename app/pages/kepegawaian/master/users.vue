@@ -174,16 +174,14 @@ const handleExecuteDelete = async () => {
         </div>
 
         <div class="modal-form-body">
-          <div class="form-double-col">
             <div class="input-set">
               <label>Nama Depan</label>
               <input v-model="form.first_name" class="standard-input" placeholder="Nama Depan" />
             </div>
             <div class="input-set">
-              <label>Belakang</label>
+              <label>Nama Belakang</label>
               <input v-model="form.last_name" class="standard-input" placeholder="Nama Belakang" />
             </div>
-          </div>
           <div class="input-set">
             <label>Identitas Login (Username/NIK)</label>
             <input v-model="form.username" :disabled="isEditing" class="standard-input" placeholder="Masukkan username" />
@@ -192,7 +190,6 @@ const handleExecuteDelete = async () => {
             <label>{{ isEditing ? 'Password Baru (Opsional)' : 'Kata Sandi Awal' }}</label>
             <input v-model="form.password" type="password" class="standard-input" placeholder="••••••••" />
           </div>
-          <div class="form-double-col">
             <div class="input-set">
               <label>Unit Kerja</label>
               <select v-model="form.company" class="standard-select">
@@ -207,7 +204,6 @@ const handleExecuteDelete = async () => {
                 <option value="admin">Admin Universitas</option>
               </select>
             </div>
-          </div>
           <div class="toggle-status-bar">
              <div class="toggle-control-group">
                <label class="ios-toggle">
