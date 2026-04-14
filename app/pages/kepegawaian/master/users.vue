@@ -279,7 +279,7 @@ const deleteUser = async (id: number) => {
 .modal-header p { color: #64748b; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 500; }
 
 .modal-body { padding: 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
-.form-grid { display: grid; grid-cols: 2; gap: 1.25rem; }
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
 
 .field label { font-size: 0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.5rem; display: block; padding-left: 0.25rem; }
 .field input, .field select { width: 100%; padding: 0.875rem 1.25rem; background: #f1f5f9; border: 1px solid #f1f5f9; border-radius: 14px; font-size: 0.95rem; font-weight: 500; transition: all 0.3s; }
