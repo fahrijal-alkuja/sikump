@@ -44,7 +44,7 @@ const handleLogin = async () => {
   <div class="login-wrapper">
     <!-- Animated Background -->
     <div class="bg-visual">
-      <img src="/Users/fahrijal/.gemini/antigravity/brain/20aed6d6-5bc4-4228-93ef-80f9c5150ee2/login_premium_bg_1776184898778.png" alt="Visual" class="bg-img" />
+      <img src="/images/login-bg.png" alt="Visual" class="bg-img" />
       <div class="overlay-gradient"></div>
     </div>
     
