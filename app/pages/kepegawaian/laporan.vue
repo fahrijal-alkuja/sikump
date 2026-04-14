@@ -201,7 +201,7 @@ const generateGenericPDF = (title: string, data: any[]) => {
     margin: { left: 14, right: 14, bottom: 20 },
     didDrawPage: (data) => {
       // Footer
-      const str = 'Halaman ' + doc.internal.getNumberOfPages()
+      const str = 'Halaman ' + doc.getNumberOfPages()
       doc.setFontSize(8)
       doc.setTextColor(148, 163, 184)
       doc.text(str, pageWidth - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' })
