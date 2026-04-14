@@ -245,7 +245,10 @@ const getPercent = (val: number, total: number) => {
         </div>
       </section>
 
-      <!-- ROW 5: QUICK ACTIONS -->
+      <!-- ROW 6: STRATEGIC DECISION SUPPORT -->
+      <KepegawaianStrategicIntelligence :stats="stats" />
+
+      <!-- ROW 7: QUICK ACTIONS -->
       <header class="section-divider mt-12">
         <h3>Akses Cepat Manajemen</h3>
         <span class="line"></span>
