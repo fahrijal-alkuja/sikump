@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "31.97.106.132"
+set user "root"
+set password "alkuja07"
+spawn ssh -o StrictHostKeyChecking=no $user@$host "
+  # Get Token
+  TOKEN_RES=$(curl -s -X POST https://api-absen.unikarta.ac.id/auth -d '{\"email\":\"rizal.alkuja@gmail.com\",\"password\":\"alkuja07\"}' -H 'Content-Type: application/json')
+  TOKEN=$(echo $TOKEN_RES | grep -o '\"token\":\"\[^\"\]*' | cut -d'\"' -f4)
+  
+  # Fetch all users and filter by NIK
+  echo '--- SEARCHING FOR NIK 991020912080786 ---'
+  curl -s -H \"Authorization: Bearer $TOKEN\" https://api-absen.unikarta.ac.id/users | tr '}' '\n' | grep '991020912080786'
+"
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "Enter passphrase for key" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}

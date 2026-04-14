@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set host "31.97.106.132"
+set user "root"
+set password "alkuja07"
+spawn scp -o StrictHostKeyChecking=no search_nik.sh root@31.97.106.132:/tmp/search_nik.sh
+expect {
+    "Enter passphrase for key" { send "$password\r"; exp_continue }
+    eof
+}
+spawn ssh -o StrictHostKeyChecking=no root@31.97.106.132 "bash /tmp/search_nik.sh"
+expect {
+    "Enter passphrase for key" { send "$password\r"; exp_continue }
+    eof
+}

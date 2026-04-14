@@ -76,7 +76,9 @@ export default defineEventHandler(async (event) => {
       if (!logMap[uId]) logMap[uId] = { count: 0, lates: 0 }
       
       // Count presence ONLY if they have a checkout time (pulang/statusOut)
-      if (log.statusOut === '1' || log.pulang) {
+      // AND they are NOT marked as 'Alpa'
+      const isAlpa = log.keteranganIn === 'Alpa' || log.keteranganIn === 'Libur'
+      if ((log.statusOut === '1' || log.pulang) && !isAlpa) {
          logMap[uId].count++
          if (log.keteranganIn === 'Telat') {
            logMap[uId].lates++
