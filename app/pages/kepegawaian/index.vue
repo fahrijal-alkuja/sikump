@@ -17,6 +17,9 @@ const activeUsers = computed(() => activeUsersData.value?.success ? activeUsersD
 const { data: tendikExData } = await useFetch<any>('/api/kepegawaian/stats/excellent-tendik')
 const tendikEx = computed(() => tendikExData.value?.success ? tendikExData.value.data : { ranking: [], expertise: [] })
 
+const { data: benchmarkData } = await useFetch<any>('/api/kepegawaian/stats/unit-benchmark')
+const unitBenchmark = computed(() => benchmarkData.value?.success ? benchmarkData.value.data : [])
+
 const getJafungName = (code: string | number) => {
   const map: any = { 1: 'Asisten Ahli', 2: 'Lektor', 3: 'Lektor Kepala', 4: 'Guru Besar' }
   return map[code] || '-'
@@ -329,6 +332,60 @@ const getPercent = (val: number, total: number) => {
          </div>
       </section>
 
+      <!-- ROW 8: UNIT PERFORMANCE BENCHMARK -->
+      <header class="section-divider mt-12">
+        <h3>Intelligence: Unit Performance Benchmark</h3>
+        <span class="line"></span>
+      </header>
+      <section class="analysis-grid benchmark-grid">
+         <div class="glass-card benchmark-panel">
+            <div class="p-header">
+                <h3>Unit dengan SDM Paling Kompeten (Top 10)</h3>
+            </div>
+            <div class="benchmark-list">
+                <div v-for="(unit, idx) in unitBenchmark" :key="unit.name" class="unit-box-card">
+                    <div class="unit-rank">#{{ Number(idx) + 1 }}</div>
+                    <div class="unit-main">
+                        <div class="u-meta-top">
+                            <span :class="['u-type-badge', unit.type.toLowerCase()]">{{ unit.type }}</span>
+                            <span class="u-staff-count">{{ unit.personnel }} Pegawai</span>
+                        </div>
+                        <h4 class="u-unit-name">{{ unit.name }}</h4>
+                        <div class="u-perf-bar"><div class="u-perf-fill" :style="{ width: (unit.average / (unitBenchmark[0]?.average || 1) * 100) + '%' }"></div></div>
+                    </div>
+                    <div class="unit-score-box">
+                        <span class="avg-val">{{ unit.average }}</span>
+                        <span class="avg-lbl">Avg Score</span>
+                    </div>
+                </div>
+            </div>
+         </div>
+         
+         <div class="glass-card insight-leader-panel">
+             <div class="p-header">
+                <h3>Analisis Kolektif Unit</h3>
+             </div>
+             <div class="leader-content">
+                <div class="trophy-display">🏆</div>
+                <h4 class="leader-title">Unit of Professional Excellence</h4>
+                <p class="leader-desc">Pencapaian tertinggi menunjukkan budaya belajar yang kuat di dalam unit kerja. Ini mencerminkan prodi/biro yang paling disiplin dalam pengembangan kompetensi personilnya.</p>
+                <div class="benchmark-mini-stats">
+                    <div class="bm-stat">
+                        <label>Highest Avg</label>
+                        <span class="v">{{ unitBenchmark[0]?.average || 0 }}</span>
+                    </div>
+                    <div class="bm-stat">
+                        <label>Units Monitored</label>
+                        <span class="v">{{ unitBenchmark.length }}</span>
+                    </div>
+                </div>
+                <div class="benchmark-footer-note">
+                   *Skor dihitung dari total pelatihan & sertifikasi dibagi jumlah pegawai.
+                </div>
+             </div>
+         </div>
+      </section>
+
       <!-- ROW 7: QUICK ACTIONS -->
       <header class="section-divider mt-12">
         <h3>Akses Cepat Manajemen</h3>
@@ -562,7 +619,44 @@ const getPercent = (val: number, total: number) => {
 .exp-insight svg { width: 20px; height: 20px; color: #6366f1; flex-shrink: 0; margin-top: 2px; }
 .exp-insight p { font-size: 13px; color: #64748b; line-height: 1.6; font-weight: 600; margin: 0; }
 
+/* Unit Benchmark Styles */
+.benchmark-grid { grid-template-columns: 1.3fr 0.7fr; }
+.benchmark-panel { padding: 2rem; }
+.benchmark-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.unit-box-card { 
+  display: flex; align-items: center; gap: 1.5rem; background: #fafafa; padding: 1rem 1.5rem; border-radius: 20px;
+  border: 1px solid #f1f5f9; transition: all 0.3s ease;
+}
+.unit-box-card:hover { transform: scale(1.02); background: white; border-color: #6366f1; }
+.unit-rank { font-size: 1.2rem; font-weight: 900; color: #cbd5e1; width: 40px; }
+.unit-box-card:nth-child(1) .unit-rank { color: #f59e0b; }
+
+.unit-main { flex: 1; }
+.u-meta-top { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.u-type-badge { font-size: 9px; font-weight: 900; padding: 2px 6px; border-radius: 4px; }
+.u-type-badge.prodi { background: #e0e7ff; color: #4338ca; }
+.u-type-badge.biro { background: #dcfce7; color: #15803d; }
+.u-staff-count { font-size: 11px; color: #94a3b8; font-weight: 700; }
+.u-unit-name { font-size: 0.95rem; font-weight: 800; color: #1e293b; margin: 0 0 8px 0; }
+.u-perf-bar { height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.u-perf-fill { height: 100%; background: #6366f1; border-radius: 3px; }
+
+.unit-score-box { text-align: right; min-width: 80px; }
+.avg-val { display: block; font-size: 1.8rem; font-weight: 900; color: #1e293b; line-height: 1; }
+.avg-lbl { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
+
+.insight-leader-panel { padding: 2rem; }
+.leader-content { text-align: center; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.trophy-display { font-size: 5rem; line-height: 1; margin: 2rem 0; filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.3)); }
+.leader-title { font-size: 1.2rem; font-weight: 900; color: #1e293b; margin-bottom: 1rem; }
+.leader-desc { font-size: 13px; color: #64748b; font-weight: 600; line-height: 1.6; margin-bottom: 2rem; }
+.benchmark-mini-stats { display: flex; gap: 2rem; margin-top: auto; border-top: 1px solid #f1f5f9; padding-top: 1.5rem; width: 100%; }
+.bm-stat { flex: 1; text-align: left; }
+.bm-stat label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.bm-stat .v { font-size: 1.4rem; font-weight: 900; color: #1e293b; }
+.benchmark-footer-note { font-size: 10px; color: #cbd5e1; font-weight: 600; margin-top: 1.5rem; }
+
 @media (max-width: 1024px) {
-  .analysis-grid.dosen, .grid-2-col, .analysis-grid.intelligence-grid, .active-users-grid, .tendik-ex-grid { grid-template-columns: 1fr; }
+  .analysis-grid.dosen, .grid-2-col, .analysis-grid.intelligence-grid, .active-users-grid, .tendik-ex-grid, .benchmark-grid { grid-template-columns: 1fr; }
 }
 </style>
