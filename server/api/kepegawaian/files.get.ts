@@ -11,10 +11,24 @@ export default defineEventHandler(async (event) => {
     // Determine sub-prodi codes for faculty-level file access
     let subProdiCodes: string[] = []
     if (isProdi && unit) {
-      const prodis: any[] = await prisma.$queryRawUnsafe(`
+      // First try direct code match
+      let prodis: any[] = await prisma.$queryRawUnsafe(`
         SELECT kode_program_studi FROM mst_program_studi 
         WHERE kode_program_studi = '${unit}' OR kode_fakultas = '${unit}'
       `)
+      
+      // If not found, try name-based matching
+      if (prodis.length === 0) {
+        const unitData: any[] = await prisma.$queryRawUnsafe(`SELECT nama_biro FROM tmst_biro WHERE id_biro = '${unit}'`)
+        const unitName = unitData[0]?.nama_biro || ''
+        if (unitName) {
+          const coreName = unitName.replace(/OL$/i, '').replace(/^FAKULTAS\s+/i, '').trim()
+          prodis = await prisma.$queryRawUnsafe(`
+            SELECT kode_program_studi FROM mst_program_studi 
+            WHERE nama_fakultas LIKE '%${coreName}%' OR nama_program_studi LIKE '%${coreName}%'
+          `)
+        }
+      }
       subProdiCodes = prodis.map(p => p.kode_program_studi)
     }
     
@@ -70,7 +84,6 @@ export default defineEventHandler(async (event) => {
     `
 
     if (isProdi && unit) {
-      // For Faculty, match unit_code in subProdiCodes. For Biro/Single prodi, match by unit or code
       if (subProdiCodes.length > 0) {
         sql = `SELECT * FROM (${sql}) AS all_files WHERE unit_code IN (${subProdiCodes.map(c => `'${c}'`).join(',')}) OR unit_code = '${unit}'`
       } else {
