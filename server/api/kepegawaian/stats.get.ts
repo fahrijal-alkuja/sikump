@@ -54,20 +54,19 @@ export default defineEventHandler(async (event) => {
     `)
     
     const s3CountRes: any = await runQuery(`
-      SELECT COUNT(DISTINCT nik) as count FROM (
-        SELECT nik FROM tmst_dosen WHERE kode_jenjang_pendidikan = 1 AND nik NOT LIKE '0000%'
-        UNION
-        SELECT nik FROM tmst_jafung WHERE id_jafung = 4
-      ) as s3_combined
-      WHERE nik IN (SELECT nik FROM tmst_dosen WHERE nik NOT LIKE '0000%' ${dFilter})
+      SELECT COUNT(DISTINCT rp.nik) as count 
+      FROM riwayat_pendidikan rp
+      JOIN tmst_dosen d ON rp.nik = d.nik
+      WHERE rp.id_pendidikan = 6 AND d.nik NOT LIKE '0000%' ${dFilter}
     `)
     const s3Actual = Number(s3CountRes[0]?.count || 0)
     const s3Target = Math.ceil(dosenCount * 0.4) 
 
     const s2CountRes: any = await runQuery(`
-      SELECT COUNT(*) as count 
-      FROM tmst_dosen d
-      WHERE d.kode_jenjang_pendidikan = 5 AND d.nik NOT LIKE '0000%' ${dFilter}
+      SELECT COUNT(DISTINCT rp.nik) as count 
+      FROM riwayat_pendidikan rp
+      JOIN tmst_dosen d ON rp.nik = d.nik
+      WHERE rp.id_pendidikan = 5 AND d.nik NOT LIKE '0000%' ${dFilter}
     `)
     const s2Actual = Number(s2CountRes[0]?.count || 0)
 
