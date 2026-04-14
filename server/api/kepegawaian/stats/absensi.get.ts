@@ -63,8 +63,8 @@ export default defineEventHandler(async (event) => {
       if (!uId) return
       if (!logMap[uId]) logMap[uId] = { count: 0, lates: 0 }
       
-      // Count presence if check-in (masuk) exists, regardless of checkout status
-      if (log.masuk) {
+      // Count presence ONLY if they have a checkout time (pulang/statusOut)
+      if (log.statusOut === '1' || log.pulang) {
          logMap[uId].count++
          if (log.keteranganIn === 'Telat') {
            logMap[uId].lates++
@@ -77,12 +77,12 @@ export default defineEventHandler(async (event) => {
     const currentMonthStr = nowServer.toISOString().slice(0, 7)
     const isCurrentMonth = bulan === currentMonthStr
     
-    // Default to 22 for past months, or dynamic count for current month
     let effectiveWorkingDays = 22
     if (isCurrentMonth) {
       const dayOfMonth = nowServer.getDate()
-      // Estimated working days passed (exclude weekends roughly)
-      effectiveWorkingDays = Math.max(dayOfMonth - Math.floor(dayOfMonth * 2 / 7), 1)
+      // Use (today - 1) as the baseline because today's checkout might not have happened yet
+      const referenceDay = Math.max(dayOfMonth - 1, 1)
+      effectiveWorkingDays = Math.max(referenceDay - Math.floor(referenceDay * 2 / 7), 1)
     }
 
     // Final Assembly
