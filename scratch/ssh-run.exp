@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+set password "alkuja07"
+set timeout 300
+set command [lindex $argv 0]
+
+spawn ssh spmb-prod $command
+expect {
+    "Enter passphrase for key*" {
+        send "$password\r"
+        exp_continue
+    }
+    "root@*" {
+        # Already logged in
+    }
+    timeout {
+        exit 1
+    }
+}
+expect eof

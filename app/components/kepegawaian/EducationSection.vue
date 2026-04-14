@@ -110,7 +110,7 @@ const openPreview = (url: string, title: string) => {
 
 <template>
   <div class="education-section">
-    <DocumentPreview 
+    <KepegawaianDocumentPreview 
       :show="preview.show" 
       :title="preview.title" 
       :file-url="preview.url" 

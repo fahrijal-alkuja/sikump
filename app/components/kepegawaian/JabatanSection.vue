@@ -221,7 +221,7 @@ const handleDelete = (table: string, id: number) => {
             <td>{{ j.tmt }}</td>
             <td>{{ getJafungName(j.id_jafung) }}</td>
             <td class="table-actions">
-                <a v-if="j.upload_sk" :href="`/assets/SK/${j.upload_sk}`" target="_blank" title="Lihat SK" class="btn-view-sk">📄</a>
+                <a v-if="j.file_upload" :href="`/assets/jafung/${j.file_upload}`" target="_blank" title="Lihat SK" class="btn-view-sk">📄</a>
                 <button @click="handleEditJafung(j)" title="Edit" class="btn-edit-icon">✏️</button>
                 <button @click="handleDelete('riwayat_jafung', j.id)" title="Hapus" class="btn-del-icon">&times;</button>
             </td>
@@ -346,7 +346,7 @@ const handleDelete = (table: string, id: number) => {
               </span>
             </td>
             <td class="table-actions">
-                <a v-if="j.upload_sk" :href="`/assets/SK/${j.upload_sk}`" target="_blank" title="Lihat SK" class="btn-icon-lux view">📄</a>
+                <a v-if="j.upload_sk" :href="`/assets/${j.status === '2' ? 'skMutasi' : 'SK'}/${j.upload_sk}`" target="_blank" title="Lihat SK" class="btn-icon-lux view">📄</a>
                 <button @click="handleEditJabatan(j)" title="Edit" class="btn-icon-lux edit">✏️</button>
                 <button @click="handleDelete('riwayat_jabatan', j.id)" title="Hapus" class="btn-icon-lux delete">✕</button>
             </td>
