@@ -246,7 +246,9 @@ const getPercent = (val: number, total: number) => {
       </section>
 
       <!-- ROW 6: STRATEGIC DECISION SUPPORT -->
-      <KepegawaianStrategicIntelligence :stats="stats" />
+      <ClientOnly>
+        <KepegawaianStrategicIntelligence :stats="stats" />
+      </ClientOnly>
 
       <!-- ROW 7: QUICK ACTIONS -->
       <header class="section-divider mt-12">

@@ -7,40 +7,46 @@ const props = defineProps<{
 
 const recommendations = computed(() => {
   const recs = []
-  if (!props.stats) return []
+  const s = props.stats
+  if (!s || !s.dosen) return []
 
   // 1. Accreditation Check (S3 Ratio)
-  const s3Ratio = (props.stats.dosen.edu.s3 / props.stats.dosen.total) * 100
+  // Logic: Using stats.matrix for more accurate tracking
+  const s3Actual = s.matrix?.s3Actual || 0
+  const totalDosen = s.dosen?.total || 1
+  const s3Ratio = (s3Actual / totalDosen) * 100
+
   if (s3Ratio < 30) {
     recs.push({
       id: 'acc-1',
       type: 'urgent',
       title: 'Akselerasi Kualifikasi S3',
-      msg: `Rasio Doktor saat ini baru ${s3Ratio.toFixed(1)}%. Disarankan memberikan insentif studi lanjut bagi ${Math.ceil(props.stats.dosen.total * 0.4 - props.stats.dosen.edu.s3)} dosen S2 untuk mengejar standar Akreditasi Unggul.`,
+      msg: `Rasio Doktor saat ini baru ${s3Ratio.toFixed(1)}%. Disarankan memberikan insentif studi lanjut bagi minimal ${Math.max(1, Math.ceil(totalDosen * 0.35 - s3Actual))} dosen S2 untuk mengejar standar Akreditasi Unggul.`,
       icon: '🎓'
     })
   }
 
   // 2. Regeneration Check (Retirement)
-  const nearRetire = props.stats.retirementDosen?.length || 0
+  const nearRetire = s.retirementDosen?.length || 0
   if (nearRetire > 0) {
     recs.push({
       id: 'reg-1',
       type: 'warning',
       title: 'Prediksi Pensiun Masif',
-      msg: `${nearRetire} dosen senior akan memasuki masa pensiun dalam 5 tahun. Perlu segera disusun Roadmap Rekrutmen untuk menjaga stabilitas rasio dosen-mahasiswa.`,
+      msg: `${nearRetire} dosen senior akan memasuki masa pensiun dalam waktu dekat. Perlu segera disusun Roadmap Rekrutmen untuk menjaga stabilitas rasio dosen-mahasiswa.`,
       icon: '⏳'
     })
   }
 
   // 3. Certification Check
-  const serdosRatio = (props.stats.dosen.certified / props.stats.dosen.total) * 100
+  const certified = s.dosen?.certified || 0
+  const serdosRatio = (certified / totalDosen) * 100
   if (serdosRatio < 70) {
     recs.push({
       id: 'cert-1',
       type: 'info',
-      title: 'Indeks Serdos Rendah',
-      msg: `${(100 - serdosRatio).toFixed(1)}% dosen tetap belum memiliki Sertifikat Pendidik. Hal ini berdampak pada perolehan Dana BKD dan kualitas mutu pengajaran nasional.`,
+      title: 'Indeks Serdos Perlu Ditingkatkan',
+      msg: `${(100 - serdosRatio).toFixed(1)}% dosen tetap belum tersertifikasi. Hal ini berdampak pada skor mutu universitas. Segera bantu proses administrasi Serdos bagi yang sudah memenuhi kualifikasi.`,
       icon: '📜'
     })
   }
