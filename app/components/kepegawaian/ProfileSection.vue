@@ -104,7 +104,7 @@ const handleUpdate = async () => {
         </div>
       </div>
       
-      <DocumentPreview 
+      <KepegawaianDocumentPreview 
         :show="preview.show" 
         :title="preview.title" 
         :file-url="preview.url" 

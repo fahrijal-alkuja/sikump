@@ -9,6 +9,11 @@ const props = defineProps<{
 const emit = defineEmits(['refresh'])
 const { showAlert, askConfirm } = useAlert()
 
+const preview = ref({ show: false, url: '', title: '' })
+const openPreview = (url: string, title: string) => {
+  preview.value = { show: true, url, title }
+}
+
 const getJafungName = (id: any) => {
   const map: any = { 1: 'Asisten Ahli', 2: 'Lektor', 3: 'Lektor Kepala', 4: 'Guru Besar' }
   return map[id] || 'Lainnya'
@@ -163,6 +168,12 @@ const handleDelete = (table: string, id: number) => {
 
 <template>
   <div class="jabatan-section">
+    <KepegawaianDocumentPreview 
+      :show="preview.show" 
+      :title="preview.title" 
+      :file-url="preview.url" 
+      @close="preview.show = false" 
+    />
     <!-- JAFUNG SECTION -->
     <div class="section-block" v-if="props.type === 'dosen'">
       <div class="section-header">
@@ -221,7 +232,7 @@ const handleDelete = (table: string, id: number) => {
             <td>{{ j.tmt }}</td>
             <td>{{ getJafungName(j.id_jafung) }}</td>
             <td class="table-actions">
-                <a v-if="j.file_upload" :href="`/assets/jafung/${j.file_upload}`" target="_blank" title="Lihat SK" class="btn-view-sk">📄</a>
+                <button v-if="j.file_upload" @click="openPreview(`/assets/jafung/${j.file_upload}`, `SK Jafung - ${getJafungName(j.id_jafung)}`)" title="Lihat SK" class="btn-icon-lux view">📄</button>
                 <button @click="handleEditJafung(j)" title="Edit" class="btn-edit-icon">✏️</button>
                 <button @click="handleDelete('riwayat_jafung', j.id)" title="Hapus" class="btn-del-icon">&times;</button>
             </td>
@@ -346,7 +357,7 @@ const handleDelete = (table: string, id: number) => {
               </span>
             </td>
             <td class="table-actions">
-                <a v-if="j.upload_sk" :href="`/assets/${j.status === '2' ? 'skMutasi' : 'SK'}/${j.upload_sk}`" target="_blank" title="Lihat SK" class="btn-icon-lux view">📄</a>
+                <button v-if="j.upload_sk" @click="openPreview(`/assets/${j.status === '2' ? 'skMutasi' : 'SK'}/${j.upload_sk}`, `SK ${getStatusName(j.status)} - ${getJabatanName(j.id_jabatan)}`)" title="Lihat SK" class="btn-icon-lux view">📄</button>
                 <button @click="handleEditJabatan(j)" title="Edit" class="btn-icon-lux edit">✏️</button>
                 <button @click="handleDelete('riwayat_jabatan', j.id)" title="Hapus" class="btn-icon-lux delete">✕</button>
             </td>

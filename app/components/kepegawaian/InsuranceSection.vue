@@ -9,6 +9,11 @@ const props = defineProps<{
 
 const emit = defineEmits(['refresh'])
 
+const preview = ref({ show: false, url: '', title: '' })
+const openPreview = (url: string, title: string) => {
+  preview.value = { show: true, url, title }
+}
+
 const isEditingTax = ref(false)
 const isEditingAskes = ref(false)
 
@@ -71,6 +76,12 @@ const handleAskesUpdate = async () => {
 
 <template>
   <div class="insurance-section">
+    <KepegawaianDocumentPreview 
+      :show="preview.show" 
+      :title="preview.title" 
+      :file-url="preview.url" 
+      @close="preview.show = false" 
+    />
     <!-- NPWP / Tax Section -->
     <div class="card-group glass-card">
       <div class="section-header">
@@ -87,7 +98,7 @@ const handleAskesUpdate = async () => {
         </div>
         <div class="info-item" v-if="taxData?.[0]?.upload_npwp">
           <label>Kartu NPWP</label>
-          <a :href="`/assets/npwp/${taxData[0].upload_npwp}`" target="_blank" class="btn-link">Lihat</a>
+          <button @click="openPreview(`/assets/npwp/${taxData[0].upload_npwp}`, 'Kartu NPWP')" class="btn-link-lux">Lihat Dokumen</button>
         </div>
       </div>
       
@@ -123,7 +134,7 @@ const handleAskesUpdate = async () => {
         </div>
         <div class="info-item" v-if="askesData?.[0]?.upload_askes">
           <label>Kartu Asuransi</label>
-          <a :href="`/assets/askes/${askesData[0].upload_askes}`" target="_blank" class="btn-link">Lihat</a>
+          <button @click="openPreview(`/assets/askes/${askesData[0].upload_askes}`, 'Kartu Asuransi/BPJS')" class="btn-link-lux">Lihat Dokumen</button>
         </div>
       </div>
 
@@ -154,6 +165,15 @@ const handleAskesUpdate = async () => {
 .info-grid-simple { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
 .form-grid-simple { display: grid; gap: 1rem; }
 .form-footer { margin-top: 1rem; display: flex; justify-content: flex-end; }
-.btn-link { color: var(--primary); text-decoration: underline; }
+.btn-link-lux {
+  background: none;
+  border: none;
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
 .info-item label { font-size: 0.75rem; color: var(--text-muted); display: block; }
 </style>

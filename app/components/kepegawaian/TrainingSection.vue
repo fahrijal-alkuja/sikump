@@ -9,6 +9,11 @@ const props = defineProps<{
 
 const emit = defineEmits(['refresh'])
 
+const preview = ref({ show: false, url: '', title: '' })
+const openPreview = (url: string, title: string) => {
+  preview.value = { show: true, url, title }
+}
+
 const isFormOpen = ref(false)
 const editingId = ref<number | null>(null)
 const form = ref({
@@ -100,6 +105,12 @@ const handleDelete = (id: number) => {
 
 <template>
   <div class="training-section">
+    <KepegawaianDocumentPreview 
+      :show="preview.show" 
+      :title="preview.title" 
+      :file-url="preview.url" 
+      @close="preview.show = false" 
+    />
     <div class="section-header">
       <h3>Riwayat Pelatihan</h3>
       <button @click="isFormOpen ? resetForm() : (isFormOpen = true)" class="btn-edit">
@@ -155,7 +166,7 @@ const handleDelete = (id: number) => {
           <td>{{ t.tahun }}</td>
           <td>{{ t.tempat || '-' }}</td>
           <td class="table-actions">
-            <a v-if="t.upload" :href="`/assets/sertifikat/${t.upload}`" target="_blank" title="Lihat Sertifikat" class="btn-view">📄</a>
+            <button v-if="t.upload" @click="openPreview(`/assets/sertifikat/${t.upload}`, `Sertifikat - ${t.nama_diklat}`)" class="btn-view-btn" title="Lihat Sertifikat">📄</button>
             <button @click="handleEdit(t)" class="btn-edit-icon" title="Edit">✏️</button>
             <button @click="handleDelete(t.id)" class="btn-del-icon" title="Hapus">&times;</button>
           </td>
@@ -180,8 +191,8 @@ const handleDelete = (id: number) => {
 .premium-table th { text-align: left; padding: 1rem; border-bottom: 1px solid var(--glass-border); font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
 .premium-table td { padding: 1rem; border-bottom: 1px solid var(--glass-border); font-size: 0.9rem; }
 .table-actions { display: flex; gap: 1rem; align-items: center; }
-.btn-view { text-decoration: none; font-size: 1.2rem; filter: grayscale(1); }
-.btn-view:hover { filter: grayscale(0); transform: scale(1.1); }
+.btn-view-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; filter: grayscale(1); transition: 0.2s; }
+.btn-view-btn:hover { filter: grayscale(0); transform: scale(1.1); }
 .btn-edit-icon { background: none; border: none; font-size: 1.1rem; cursor: pointer; }
 .btn-del-icon { background: none; border: none; color: #ef4444; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
 .btn-del-icon:hover { opacity: 1; }

@@ -9,6 +9,11 @@ const props = defineProps<{
 const emit = defineEmits(['refresh'])
 
 const isEditing = ref(false)
+
+const preview = ref({ show: false, url: '', title: '' })
+const openPreview = (url: string, title: string) => {
+  preview.value = { show: true, url, title }
+}
 const form = ref({
   status_kepegawaian: props.appointmentData?.[0]?.status_kepegawaian || '',
   status_keaktivan: props.appointmentData?.[0]?.status_keaktivan || '',
@@ -63,6 +68,12 @@ const handleUpdate = async () => {
 
 <template>
   <div class="appointment-section">
+    <KepegawaianDocumentPreview 
+      :show="preview.show" 
+      :title="preview.title" 
+      :file-url="preview.url" 
+      @close="preview.show = false" 
+    />
     <div class="section-header">
       <h3>Riwayat Kepegawaian / Pengangkatan</h3>
       <button @click="isEditing = !isEditing" class="btn-edit">
@@ -94,7 +105,7 @@ const handleUpdate = async () => {
         </div>
         <div class="info-item" v-if="appointmentData[0].upload_sk">
           <label>File SK</label>
-          <a :href="`/assets/SK/${appointmentData[0].upload_sk}`" target="_blank" class="btn-link">Lihat SK</a>
+          <button @click="openPreview(`/assets/SK/${appointmentData[0].upload_sk}`, 'SK Pengangkatan')" class="btn-link-lux">Lihat SK</button>
         </div>
       </div>
       <div v-else class="empty-tab">Tidak ada riwayat pengangkatan.</div>
@@ -188,10 +199,15 @@ const handleUpdate = async () => {
 .form-footer { margin-top: 2rem; display: flex; justify-content: flex-end; }
 .premium-table { width: 100%; border-collapse: collapse; }
 
-.btn-link {
+.btn-link-lux {
+  background: none;
+  border: none;
   color: var(--primary);
   text-decoration: underline;
   font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
 }
 
 .empty-tab {

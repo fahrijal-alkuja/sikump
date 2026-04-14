@@ -9,6 +9,11 @@ const props = defineProps<{
 const emit = defineEmits(['refresh'])
 
 const isEditing = ref(false)
+
+const preview = ref({ show: false, url: '', title: '' })
+const openPreview = (url: string, title: string) => {
+  preview.value = { show: true, url, title }
+}
 const form = ref({
   status_perkawinan: props.familyData?.[0]?.status_perkawinan || '',
   nama_ismi: props.familyData?.[0]?.nama_ismi || '',
@@ -59,6 +64,12 @@ const handleUpdate = async () => {
 
 <template>
   <div class="family-section">
+    <KepegawaianDocumentPreview 
+      :show="preview.show" 
+      :title="preview.title" 
+      :file-url="preview.url" 
+      @close="preview.show = false" 
+    />
     <div class="section-header">
       <h3>Riwayat Keluarga</h3>
       <button @click="isEditing = !isEditing" class="btn-edit">
@@ -82,7 +93,7 @@ const handleUpdate = async () => {
         </div>
         <div class="info-item" v-if="familyData[0].upload_kk">
           <label>Kartu Keluarga (KK)</label>
-          <a :href="`/assets/kk/${familyData[0].upload_kk}`" target="_blank" class="btn-link">Lihat Dokumen</a>
+          <button @click="openPreview(`/assets/kk/${familyData[0].upload_kk}`, 'Kartu Keluarga')" class="btn-link-lux">Lihat Dokumen</button>
         </div>
       </div>
       <div v-else class="empty-tab">Tidak ada riwayat keluarga.</div>
@@ -198,10 +209,15 @@ const handleUpdate = async () => {
 
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.btn-link {
+.btn-link-lux {
+  background: none;
+  border: none;
   color: var(--primary);
   text-decoration: underline;
   font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
 }
 
 .empty-tab {
