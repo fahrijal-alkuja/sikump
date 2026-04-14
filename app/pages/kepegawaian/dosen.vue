@@ -122,8 +122,19 @@ h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: 0.25rem; color: #1e293b
 .premium-table th { text-align: left; padding: 1.2rem; color: #64748b; border-bottom: 2px solid var(--bg-main); font-size: 0.75rem; text-transform: uppercase; font-weight: 800; }
 .premium-table td { padding: 1.4rem 1.2rem; border-bottom: 1px solid #f1f5f9; color: #475569; }
 .name-cell { font-weight: 800; font-size: 1rem; color: #1e293b; }
-.btn-view { color: var(--primary); text-decoration: none; font-weight: 700; font-size: 0.9rem; padding: 0.5rem 1rem; background: rgba(99,102,241,0.08); border-radius: 8px; transition: 0.2s; }
-.btn-view:hover { background: var(--primary); color: white; }
+.btn-view { 
+  display: inline-block;
+  white-space: nowrap;
+  color: var(--primary); 
+  text-decoration: none; 
+  font-weight: 700; 
+  font-size: 0.9rem; 
+  padding: 0.5rem 1rem; 
+  background: rgba(99,102,241,0.08); 
+  border-radius: 8px; 
+  transition: 0.2s; 
+}
+.btn-view:hover { background: var(--primary); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
 
 .empty-state, .loading-state { text-align: center; padding: 5rem; color: var(--text-muted); }
 </style>

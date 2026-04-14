@@ -123,8 +123,19 @@ h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: 0.25rem; color: #1e293b
 .unit-badge { background: rgba(99, 102, 241, 0.08); color: var(--primary); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; }
 .nik-cell { color: var(--primary); font-family: monospace; font-size: 1rem; font-weight: 600; }
 .name-cell { font-weight: 800; font-size: 1rem; color: #1e293b; }
-.btn-view { color: var(--primary); text-decoration: none; font-weight: 700; font-size: 0.9rem; padding: 0.5rem 1rem; background: rgba(99,102,241,0.08); border-radius: 8px; transition: 0.2s; }
-.btn-view:hover { background: var(--primary); color: white; }
+.btn-view { 
+  display: inline-block;
+  white-space: nowrap;
+  color: var(--primary); 
+  text-decoration: none; 
+  font-weight: 700; 
+  font-size: 0.9rem; 
+  padding: 0.5rem 1rem; 
+  background: rgba(99,102,241,0.08); 
+  border-radius: 8px; 
+  transition: 0.2s; 
+}
+.btn-view:hover { background: var(--primary); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
 
 .empty-state, .loading-state { text-align: center; padding: 5rem; color: var(--text-muted); }
 </style>
