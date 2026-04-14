@@ -62,7 +62,9 @@ export default defineEventHandler(async (event) => {
       const uId = log.userId
       if (!uId) return
       if (!logMap[uId]) logMap[uId] = { count: 0, lates: 0 }
-      if (log.statusOut === '1') {
+      
+      // Count presence if check-in (masuk) exists, regardless of checkout status
+      if (log.masuk) {
          logMap[uId].count++
          if (log.keteranganIn === 'Telat') {
            logMap[uId].lates++
@@ -70,13 +72,25 @@ export default defineEventHandler(async (event) => {
       }
     })
 
-    // 5. Final Assembly
+    // 5. Calculate Dynamic Working Days
+    const nowServer = new Date()
+    const currentMonthStr = nowServer.toISOString().slice(0, 7)
+    const isCurrentMonth = bulan === currentMonthStr
+    
+    // Default to 22 for past months, or dynamic count for current month
+    let effectiveWorkingDays = 22
+    if (isCurrentMonth) {
+      const dayOfMonth = nowServer.getDate()
+      // Estimated working days passed (exclude weekends roughly)
+      effectiveWorkingDays = Math.max(dayOfMonth - Math.floor(dayOfMonth * 2 / 7), 1)
+    }
+
+    // Final Assembly
     const result = tendikSikump.map(t => {
       const uId = nikToUserIdMap[t.nik]
       const logs = (uId ? logMap[uId] : null) || { count: 0, lates: 0 }
       
-      const workingDays = 22
-      const presenceRate = Math.min((logs.count / workingDays) * 100, 100)
+      const presenceRate = Math.min((logs.count / effectiveWorkingDays) * 100, 100)
       const disciplineScore = Math.max(presenceRate - (logs.lates * 2), 0)
 
       return {
