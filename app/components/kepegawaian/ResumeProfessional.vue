@@ -1,7 +1,14 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
 const props = defineProps<{
   employee: any
 }>()
+
+const isMounted = ref(false)
+onMounted(() => {
+  isMounted.value = true
+})
 
 const handlePrint = () => {
   window.print()
@@ -132,7 +139,9 @@ const handlePrint = () => {
       </section>
 
       <footer class="resume-footer">
-        <div class="timestamp">Dicetak pada: {{ new Date().toLocaleString('id-ID') }}</div>
+        <div class="timestamp">
+          Dicetak pada: <ClientOnly fallback="-">{{ new Date().toLocaleString('id-ID') }}</ClientOnly>
+        </div>
         <div class="signature">
           <p>Petugas Administrasi,</p>
           <div class="sig-space"></div>
