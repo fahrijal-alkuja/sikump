@@ -318,10 +318,11 @@ const handleExecuteDelete = async () => {
 .modal-main-title { font-size: 24px; font-weight: 900; color: #1e293b; letter-spacing: -1px; margin: 0; }
 .modal-sub-title { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
 
-.modal-form-body { padding: 40px 50px; display: flex; flex-direction: column; gap: 20px; }
-.form-double-col { display: flex; gap: 15px; }
+.modal-form-body { padding: 40px 60px; display: flex; flex-direction: column; gap: 28px; }
+.form-double-col { display: flex; gap: 24px; width: 100%; }
 .form-double-col .input-set { flex: 1; }
-.input-set label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; padding-left: 5px; letter-spacing: 0.5px; }
+.input-set { display: flex; flex-direction: column; width: 100%; margin-bottom: 5px; }
+.input-set label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; padding-left: 8px; letter-spacing: 0.8px; }
 .standard-input, .standard-select { 
   width: 100%; padding: 14px 20px; background: #f1f5f9; border: 2px solid #f1f5f9; border-radius: 18px; 
   font-size: 15px; font-weight: 700; color: #1e293b; transition: all 0.3s; appearance: none;
