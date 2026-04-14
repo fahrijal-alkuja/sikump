@@ -311,14 +311,14 @@ const handleExecuteDelete = async () => {
 .animate-modal { animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(40px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-.modal-surface-box { width: 100%; max-width: 520px; background: white; border-radius: 40px; overflow: hidden; box-shadow: 0 30px 60px -15px rgba(0,0,0,0.3); }
-.modal-form-header { padding: 30px; background: #f8fafc; text-align: center; border-bottom: 1px solid #f1f5f9; }
+.modal-surface-box { width: 100%; max-width: 620px; background: white; border-radius: 48px; overflow: hidden; box-shadow: 0 30px 80px -15px rgba(15, 23, 42, 0.3); }
+.modal-form-header { padding: 45px 50px 35px; background: #f8fafc; text-align: center; border-bottom: 1px solid #f1f5f9; }
 .header-icon-box { width: 60px; height: 60px; background: #4f46e5; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; margin: 0 auto 15px; box-shadow: 0 10px 20px rgba(79,70,229,0.3); }
 .header-icon-box svg { width: 30px; height: 30px; }
 .modal-main-title { font-size: 24px; font-weight: 900; color: #1e293b; letter-spacing: -1px; margin: 0; }
 .modal-sub-title { font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
 
-.modal-form-body { padding: 30px; display: flex; flex-direction: column; gap: 15px; }
+.modal-form-body { padding: 40px 50px; display: flex; flex-direction: column; gap: 20px; }
 .form-double-col { display: flex; gap: 15px; }
 .form-double-col .input-set { flex: 1; }
 .input-set label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; padding-left: 5px; letter-spacing: 0.5px; }
