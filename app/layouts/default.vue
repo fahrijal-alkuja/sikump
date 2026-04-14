@@ -19,25 +19,64 @@ const handleLogout = async () => {
     <header class="main-header glass-card" v-if="user">
       <div class="header-left">
         <div class="brand">
-          <div class="brand-logo">U</div>
+          <div class="brand-logo">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
           <div class="brand-text">SIKUMP<span>.unikarta</span></div>
         </div>
         <nav class="main-nav">
-          <NuxtLink to="/kepegawaian" class="nav-link" exact-active-class="active">Dashboard</NuxtLink>
-          <NuxtLink to="/kepegawaian/dosen" class="nav-link" active-class="active">Dosen</NuxtLink>
-          <NuxtLink to="/kepegawaian/tendik" class="nav-link" active-class="active">Tendik</NuxtLink>
-          <NuxtLink to="/kepegawaian/berkas" class="nav-link" active-class="active">Berkas</NuxtLink>
-          <NuxtLink to="/kepegawaian/laporan" class="nav-link" active-class="active">Laporan</NuxtLink>
+          <NuxtLink to="/kepegawaian" class="nav-link" exact-active-class="active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Dashboard
+          </NuxtLink>
+          <NuxtLink to="/kepegawaian/dosen" class="nav-link" active-class="active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Dosen
+          </NuxtLink>
+          <NuxtLink to="/kepegawaian/tendik" class="nav-link" active-class="active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            Tendik
+          </NuxtLink>
+          <NuxtLink to="/kepegawaian/berkas" class="nav-link" active-class="active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            Berkas
+          </NuxtLink>
+          <NuxtLink to="/kepegawaian/laporan" class="nav-link" active-class="active">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Laporan
+          </NuxtLink>
           <div class="nav-dropdown">
             <span class="nav-link">Master Data ▾</span>
             <div class="dropdown-content glass-card">
-              <NuxtLink to="/kepegawaian/master/biro" class="drop-link">Biro / Lembaga</NuxtLink>
-              <NuxtLink to="/kepegawaian/master/prodi" class="drop-link">Program Studi</NuxtLink>
-              <NuxtLink to="/kepegawaian/master/pangkat" class="drop-link">Pangkat & Golongan</NuxtLink>
-              <NuxtLink to="/kepegawaian/master/jafung" class="drop-link">Jabatan Akademik</NuxtLink>
-              <NuxtLink to="/kepegawaian/master/jabatan" class="drop-link">Jabatan Struktural</NuxtLink>
+              <NuxtLink to="/kepegawaian/master/biro" class="drop-link">
+                <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                Biro / Lembaga
+              </NuxtLink>
+              <NuxtLink to="/kepegawaian/master/prodi" class="drop-link">
+                <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                Program Studi
+              </NuxtLink>
+              <NuxtLink to="/kepegawaian/master/pangkat" class="drop-link">
+                <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                Pangkat & Golongan
+              </NuxtLink>
+              <NuxtLink to="/kepegawaian/master/jafung" class="drop-link">
+                <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+                Jabatan Akademik
+              </NuxtLink>
+              <NuxtLink to="/kepegawaian/master/jabatan" class="drop-link">
+                <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                Jabatan Struktural
+              </NuxtLink>
               <div class="dropdown-divider"></div>
-              <NuxtLink to="/kepegawaian/logs" class="drop-link">Log Aktivitas</NuxtLink>
+              <NuxtLink to="/kepegawaian/logs" class="drop-link">
+                <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                Log Aktivitas
+              </NuxtLink>
             </div>
           </div>
         </nav>
@@ -140,16 +179,21 @@ const handleLogout = async () => {
 }
 
 .brand-logo {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   background: var(--primary);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.brand-logo svg {
+  width: 100%;
+  height: 100%;
 }
 
 .brand-text {
@@ -172,10 +216,23 @@ const handleLogout = async () => {
   color: #64748b;
   text-decoration: none;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: all 0.2s;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.85rem;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+}
+
+.nav-link:hover .nav-icon, .nav-link.active .nav-icon {
+  opacity: 1;
 }
 
 .nav-link:hover {
@@ -284,14 +341,27 @@ const handleLogout = async () => {
 .nav-dropdown:hover .dropdown-content { display: block; }
 
 .drop-link {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
-  color: var(--text-muted);
+  color: #64748b;
   text-decoration: none;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   transition: 0.2s;
+}
+
+.drop-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.5;
+}
+
+.drop-link:hover .drop-icon {
+  opacity: 1;
+  color: var(--primary);
 }
 
 .drop-link:hover { background: rgba(99, 102, 241, 0.1); color: var(--primary); }

@@ -39,7 +39,9 @@ const getPercent = (val: number, total: number) => {
       <!-- ROW 1: CORE METRICS -->
       <section class="metrics-grid">
         <div class="glass-card metric-item sdm">
-          <div class="m-icon">👥</div>
+          <div class="m-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
           <div class="m-data">
             <label>Total SDM Aktif</label>
             <div class="num">{{ stats.total }}</div>
@@ -48,7 +50,9 @@ const getPercent = (val: number, total: number) => {
         </div>
         
         <div class="glass-card metric-item doctor">
-          <div class="m-icon">🎓</div>
+          <div class="m-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+          </div>
           <div class="m-data">
             <label>Pencapaian S3 (Doktor)</label>
             <div class="num">{{ stats.matrix.s3Actual }}<span class="sub">/{{ stats.matrix.s3Target }}</span></div>
@@ -57,7 +61,9 @@ const getPercent = (val: number, total: number) => {
         </div>
 
         <div class="glass-card metric-item master">
-          <div class="m-icon">📚</div>
+          <div class="m-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          </div>
           <div class="m-data">
             <label>Dosen Berpendidikan S2</label>
             <div class="num">{{ stats.matrix.s2Actual }}</div>
@@ -66,7 +72,9 @@ const getPercent = (val: number, total: number) => {
         </div>
 
         <div class="glass-card metric-item alert">
-          <div class="m-icon">🔔</div>
+          <div class="m-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          </div>
           <div class="m-data">
             <label>Antrian Kenaikan Pangkat</label>
             <div class="num">{{ stats.alerts.length }}</div>
@@ -75,7 +83,9 @@ const getPercent = (val: number, total: number) => {
         </div>
 
         <div class="glass-card metric-item training">
-          <div class="m-icon">🏛️</div>
+          <div class="m-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          </div>
           <div class="m-data">
             <label>Pengembangan Tendik</label>
             <div class="num">{{ stats.tendik.trained }}<span class="sub">/{{ stats.tendik.total }}</span></div>
@@ -242,16 +252,16 @@ const getPercent = (val: number, total: number) => {
       </header>
       <section class="action-grid">
         <NuxtLink to="/kepegawaian/dosen" class="glass-card action-item">
-          <span class="i">👨‍🏫</span> <h3>Kelola Dosen</h3>
+          <span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span> <h3>Kelola Dosen</h3>
         </NuxtLink>
         <NuxtLink to="/kepegawaian/tendik" class="glass-card action-item">
-          <span class="i">🏛️</span> <h3>Kelola Tendik</h3>
+          <span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span> <h3>Kelola Tendik</h3>
         </NuxtLink>
         <NuxtLink to="/kepegawaian/berkas" class="glass-card action-item">
-          <span class="i">📂</span> <h3>Digital Dossier</h3>
+          <span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></span> <h3>Digital Dossier</h3>
         </NuxtLink>
         <NuxtLink to="/kepegawaian/laporan" class="glass-card action-item">
-          <span class="i">📑</span> <h3>Export Laporan</h3>
+          <span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></span> <h3>Export Laporan</h3>
         </NuxtLink>
       </section>
     </div>
@@ -270,7 +280,16 @@ const getPercent = (val: number, total: number) => {
 /* Row 1 Metrics */
 .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
 .metric-item { display: flex; align-items: center; gap: 1.5rem; padding: 2rem; }
-.m-icon { font-size: 2.5rem; filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.3)); }
+.m-icon { 
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.3)); 
+}
+.m-icon svg { width: 100%; height: 100%; }
 .m-data label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em; }
 .m-data .num { font-size: 2.5rem; font-weight: 900; margin: 0.2rem 0; color: #1e293b; }
 .num .sub { font-size: 1.2rem; color: var(--text-muted); opacity: 0.8; }
@@ -368,7 +387,16 @@ const getPercent = (val: number, total: number) => {
 .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
 .action-item { padding: 1.5rem; display: flex; align-items: center; gap: 1rem; text-decoration: none; color: #1e293b; transition: 0.3s; }
 .action-item:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: var(--card-shadow); background: white; }
-.action-item .i { font-size: 2rem; }
+.action-item .i { 
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  opacity: 0.8;
+}
+.action-item .i svg { width: 100%; height: 100%; }
 .action-item h3 { font-size: 1rem; font-weight: 800; }
 
 /* Custom Scrollbar */
