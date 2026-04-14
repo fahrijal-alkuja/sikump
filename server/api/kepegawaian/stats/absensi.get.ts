@@ -34,31 +34,36 @@ export default defineEventHandler(async (event) => {
       headers: { Authorization: `Bearer ${token}` }
     })
 
-    // 4. Get All Personnel from SIKUMP (Tendik only for this context)
-    const tendikSikump = await prisma.tmst_karyawan.findMany({
-      where: {
-        nik: { notIn: (await prisma.tmst_dosen.findMany({ select: { nik: true } })).map(d => d.nik) }
-      },
-      include: {
-        riwayat_jabatan: {
-          where: { is_aktiv: 'Y' },
-          include: { tmst_biro: true }
+    // 4. Get All Personnel from SIKUMP (Tendik only)
+    const [tendikSikump, biroList] = await Promise.all([
+      prisma.tmst_karyawan.findMany({
+        include: {
+          riwayat_jabatan: {
+            where: { is_aktiv: 'Y' }
+          }
         }
-      }
+      }),
+      prisma.tmst_biro.findMany()
+    ])
+
+    // Create a map for biro names for easy lookup
+    const biroMap: Record<string, string> = {}
+    biroList.forEach(b => {
+      if (b.id_biro) biroMap[b.id_biro] = b.nama_biro
     })
 
+    // Filter out Dosen
+    const dosenNiks = (await prisma.tmst_dosen.findMany({ select: { nik: true } })).map(d => d.nik)
+    const pureTendik = tendikSikump.filter(t => !dosenNiks.includes(t.nik))
+
     // 5. Map and Aggregate Data
-    // Create a map of NIK to Absence UserId
     const nikToUserIdMap: Record<string, string> = {}
-    const userIdToNameMap: Record<string, string> = {}
     absenUsers.forEach((u: any) => {
       if (u.profile?.nik) {
         nikToUserIdMap[u.profile.nik] = u._id
-        userIdToNameMap[u._id] = u.profile.nama
       }
     })
 
-    // Aggregate logs per UserId
     const logMap: Record<string, { count: number, lates: number }> = {}
     absenLogs.forEach((log: any) => {
       if (!logMap[log.userId]) logMap[log.userId] = { count: 0, lates: 0 }
@@ -71,20 +76,21 @@ export default defineEventHandler(async (event) => {
     })
 
     // Final Assembly
-    const result = tendikSikump.map(t => {
+    const result = pureTendik.map(t => {
       const uId = nikToUserIdMap[t.nik]
-      const logs = uId ? logMap[uId] : { count: 0, lates: 0 }
+      const logs = (uId ? logMap[uId] : null) || { count: 0, lates: 0 }
       
-      // Calculate Score (Simple logic: Presence vs working days, 22 days avg)
       const workingDays = 22
       const presenceRate = Math.min((logs.count / workingDays) * 100, 100)
-      const disciplineScore = Math.max(presenceRate - (logs.lates * 2), 0) // Deduct for lates
+      const disciplineScore = Math.max(presenceRate - (logs.lates * 2), 0)
+
+      const idBiro = t.riwayat_jabatan?.[0]?.id_biro || ''
 
       return {
         nik: t.nik,
-        nama: t.nama,
-        biro: t.riwayat_jabatan[0]?.tmst_biro?.nama_biro || 'Tanpa Unit',
-        jabatan: t.riwayat_jabatan[0]?.jabatan || '-',
+        nama: t.nama || 'Tanpa Nama',
+        biro: biroMap[idBiro] || 'Tanpa Unit',
+        jabatan: t.riwayat_jabatan?.[0]?.id_jabatan || '-',
         hadir: logs.count,
         telat: logs.lates,
         score: Number(disciplineScore.toFixed(1)),

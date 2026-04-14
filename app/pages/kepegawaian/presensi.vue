@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 
 definePageMeta({
-  layout: 'admin',
+  layout: 'default',
   middleware: ['admin']
 })
 
@@ -166,7 +166,7 @@ const getScoreColor = (score: number) => {
 .presensi-page { padding: 2rem; color: #1e293b; min-height: 100vh; background: #f8fafc; }
 
 .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; }
-.page-header h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; background: linear-gradient(to right, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+.page-header h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; background: linear-gradient(to right, #6366f1, #a855f7); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
 .page-header p { font-size: 1rem; color: #64748b; font-weight: 600; margin-top: 0.5rem; }
 
 .header-actions { display: flex; gap: 1rem; }
