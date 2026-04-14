@@ -49,7 +49,8 @@ const handleSave = async () => {
       body: form.value
     })
     if (res.success) {
-      showModal.value = false refresh()
+      showModal.value = false
+      refresh()
     } else {
       alert(res.message || 'Gagal menyimpan user')
     }
@@ -65,7 +66,8 @@ const handleExecuteDelete = async () => {
   if (!selectedUserId.value) return
   const res = await $fetch<any>(`/api/kepegawaian/master/users?id=${selectedUserId.value}`, { method: 'DELETE' })
   if (res.success) {
-    showDeleteModal.value = false refresh()
+    showDeleteModal.value = false
+    refresh()
   } else { alert(res.message) }
 }
 </script>
