@@ -17,6 +17,7 @@ export default defineEventHandler(async (event) => {
       FROM tmst_karyawan k
       LEFT JOIN riwayat_jabatan rj ON k.nik = rj.nik AND rj.is_aktiv = 'Y'
       LEFT JOIN tmst_biro b ON rj.id_biro = b.id_biro
+      WHERE k.nik NOT IN (SELECT nik FROM tmst_dosen)
       ORDER BY (
         (SELECT COUNT(*) FROM riwayat_pelatihan rp2 WHERE rp2.nik = k.nik) + 
         (SELECT COUNT(*) FROM tmst_sertifikasi ts2 WHERE ts2.nik = k.nik)
@@ -25,13 +26,13 @@ export default defineEventHandler(async (event) => {
     `
 
     // 2. Expertise Analysis (Dominant Keahlian)
-    // We fetch all training and certifications for Tendik (Karyawan)
+    // We fetch all training and certifications for Tendik (Karyawan) only
     const expertiseData: any[] = await prisma.$queryRaw`
       SELECT nama_diklat as title FROM riwayat_pelatihan 
-      WHERE nik IN (SELECT nik FROM tmst_karyawan)
+      WHERE nik IN (SELECT nik FROM tmst_karyawan WHERE nik NOT IN (SELECT nik FROM tmst_dosen))
       UNION ALL
       SELECT bidang_studi as title FROM tmst_sertifikasi
-      WHERE nik IN (SELECT nik FROM tmst_karyawan)
+      WHERE nik IN (SELECT nik FROM tmst_karyawan WHERE nik NOT IN (SELECT nik FROM tmst_dosen))
     `
 
     const expertiseMap: Record<string, number> = {}
