@@ -26,7 +26,7 @@ const getActionColor = (aksi: string) => {
         <h1 class="logs-main-title">Audit Log Aktivitas</h1>
         <p class="logs-sub-desc">Rekaman Jejak Administratif & Keamanan Sistem</p>
       </div>
-      <button @click="refresh" class="btn-refresh-logs" title="Refresh Data">
+      <button @click="() => refresh()" class="btn-refresh-logs" title="Refresh Data">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
         Segarkan Log
       </button>
