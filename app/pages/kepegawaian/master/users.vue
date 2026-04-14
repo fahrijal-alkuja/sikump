@@ -174,6 +174,7 @@ const handleExecuteDelete = async () => {
         </div>
 
         <div class="modal-form-body">
+          <div class="form-double-col">
             <div class="input-set">
               <label>Nama Depan</label>
               <input v-model="form.first_name" class="standard-input" placeholder="Nama Depan" />
@@ -182,14 +183,19 @@ const handleExecuteDelete = async () => {
               <label>Nama Belakang</label>
               <input v-model="form.last_name" class="standard-input" placeholder="Nama Belakang" />
             </div>
+          </div>
+          
           <div class="input-set">
             <label>Identitas Login (Username/NIK)</label>
             <input v-model="form.username" :disabled="isEditing" class="standard-input" placeholder="Masukkan username" />
           </div>
+          
           <div class="input-set">
             <label>{{ isEditing ? 'Password Baru (Opsional)' : 'Kata Sandi Awal' }}</label>
             <input v-model="form.password" type="password" class="standard-input" placeholder="••••••••" />
           </div>
+          
+          <div class="form-double-col">
             <div class="input-set">
               <label>Unit Kerja</label>
               <select v-model="form.company" class="standard-select">
@@ -204,6 +210,7 @@ const handleExecuteDelete = async () => {
                 <option value="admin">Admin Universitas</option>
               </select>
             </div>
+          </div>
           <div class="toggle-status-bar">
              <div class="toggle-control-group">
                <label class="ios-toggle">
@@ -307,15 +314,15 @@ const handleExecuteDelete = async () => {
 .animate-modal { animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.9) translateY(40px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-.modal-surface-box { width: 100%; max-width: 560px; max-height: 90vh; background: white; border-radius: 40px; overflow-y: auto; box-shadow: 0 30px 80px -15px rgba(15, 23, 42, 0.3); }
-.modal-form-header { padding: 30px 40px 20px; background: #f8fafc; text-align: center; border-bottom: 1px solid #f1f5f9; }
+.modal-surface-box { width: 100%; max-width: 750px; max-height: 90vh; background: white; border-radius: 40px; overflow-y: auto; box-shadow: 0 30px 80px -15px rgba(15, 23, 42, 0.3); }
+.modal-form-header { padding: 35px 50px 25px; background: #f8fafc; text-align: center; border-bottom: 1px solid #f1f5f9; }
 .header-icon-box { width: 50px; height: 50px; background: #4f46e5; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; margin: 0 auto 12px; }
 .header-icon-box svg { width: 24px; height: 24px; }
-.modal-main-title { font-size: 20px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; margin: 0; }
-.modal-sub-title { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+.modal-main-title { font-size: 24px; font-weight: 900; color: #1e293b; letter-spacing: -1px; margin: 0; }
+.modal-sub-title { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
 
-.modal-form-body { padding: 30px 40px; display: flex; flex-direction: column; gap: 20px; }
-.form-double-col { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; }
+.modal-form-body { padding: 40px 60px; display: flex; flex-direction: column; gap: 30px; }
+.form-double-col { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; }
 .form-double-col .input-set { width: 100%; }
 .input-set { display: flex; flex-direction: column; width: 100%; margin-bottom: 5px; }
 .input-set label { display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; padding-left: 8px; letter-spacing: 0.8px; }
