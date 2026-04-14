@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
           (SELECT COUNT(*) FROM riwayat_pelatihan rp WHERE rp.nik = d.nik) + 
           (SELECT COUNT(*) FROM tmst_sertifikasi ts WHERE ts.nik = d.nik)
         ) as total_points
-      FROM tmst_program_studi p
+      FROM mst_program_studi p
       JOIN tmst_dosen d ON p.kode_program_studi = d.kode_program_studi
       GROUP BY p.kode_program_studi, p.nama_program_studi
     `
