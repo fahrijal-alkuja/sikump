@@ -196,6 +196,13 @@ const getPercent = (val: number, total: number) => {
                 <div class="exp-bar-bg">
                    <div class="exp-bar-fill" :style="{ width: (Number(exp.count) / Number(tendikEx.ranking[0]?.score || 10) * 100) + '%' }"></div>
                 </div>
+                <!-- Member mapping tags -->
+                <div class="exp-members">
+                   <div v-for="mem in exp.members" :key="mem.nik" class="mem-tag" :title="mem.name">
+                      {{ mem.name.split(' ')[0] }}
+                   </div>
+                   <div v-if="exp.count > 3" class="mem-tag more">+{{ Number(exp.count) - 3 }}</div>
+                </div>
              </div>
              <div class="exp-insight">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
@@ -538,8 +545,15 @@ const getPercent = (val: number, total: number) => {
 .exp-label { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
 .exp-name { font-weight: 800; color: #334155; font-size: 0.9rem; }
 .exp-val { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
-.exp-bar-bg { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+.exp-bar-bg { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; margin-bottom: 0.6rem; }
 .exp-bar-fill { height: 100%; background: linear-gradient(to right, #6366f1, #a855f7); border-radius: 4px; }
+
+.exp-members { display: flex; flex-wrap: wrap; gap: 6px; }
+.mem-tag { 
+  font-size: 10px; font-weight: 800; color: #4f46e5; background: #eef2ff; 
+  padding: 2px 8px; border-radius: 6px; border: 1px solid #dbeafe;
+}
+.mem-tag.more { background: white; color: #94a3b8; border-style: dashed; }
 
 .exp-insight { 
   margin-top: 2rem; padding: 1.25rem; background: #f8fafc; border-radius: 16px; border-left: 4px solid #6366f1;
