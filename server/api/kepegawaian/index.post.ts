@@ -1,8 +1,9 @@
 import { defineEventHandler, readMultipartFormData, createError } from 'h3'
 import { requireAdmin } from '../../utils/auth'
 import { prisma } from '../../utils/prisma'
-import { writeFile } from 'fs/promises'
+import { writeFile, rename } from 'fs/promises'
 import path from 'path'
+import { getStoragePath } from '../../utils/storage'
 
 export default defineEventHandler(async (event) => {
   requireAdmin(event)
@@ -22,9 +23,8 @@ export default defineEventHandler(async (event) => {
         const ext = path.extname(item.filename)
         fields.nik = fields.nik || 'new' // fallback if nik not yet parsed
         const fileName = `${Date.now()}${ext}` // wait until we have NIK for better name? or just timestamp
-        const storageRoot = '/www/wwwroot/sikump-storage'
-        
-        await writeFile(path.join(storageRoot, 'KTP', fileName), item.data)
+        const ktpDir = getStoragePath('KTP')
+        await writeFile(path.join(ktpDir, fileName), item.data)
         upload_ktp_name = fileName
       } else {
         fields[item.name] = item.data.toString()
@@ -41,9 +41,8 @@ export default defineEventHandler(async (event) => {
   // Rename file once we have NIK if needed, but timestamp is fine
   const ktpFinalName = upload_ktp_name ? `${nik}_ktp_${upload_ktp_name}` : null
   if (upload_ktp_name && ktpFinalName) {
-    const storageRoot = '/www/wwwroot/sikump-storage'
-    const fs = await import('fs/promises')
-    await fs.rename(path.join(storageRoot, 'KTP', upload_ktp_name), path.join(storageRoot, 'KTP', ktpFinalName))
+    const ktpDir = getStoragePath('KTP')
+    await rename(path.join(ktpDir, upload_ktp_name), path.join(ktpDir, ktpFinalName))
   }
 
   try {

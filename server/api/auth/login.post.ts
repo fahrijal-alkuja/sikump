@@ -1,6 +1,7 @@
-import { defineEventHandler, readBody, setCookie, createError } from 'h3'
+import { defineEventHandler, readBody, createError } from 'h3'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../../utils/prisma'
+import { setSession } from '../../utils/session'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -71,13 +72,8 @@ export default defineEventHandler(async (event) => {
       roles
     }
 
-    // 5. Set Session Cookie (using simple string for now, in prod use JWT or encryption)
-    setCookie(event, 'auth_session', JSON.stringify(sessionData), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24, // 1 day
-      path: '/'
-    })
+    // 5. Set Secure Session Cookie
+    setSession(event, sessionData)
 
     return {
       success: true,

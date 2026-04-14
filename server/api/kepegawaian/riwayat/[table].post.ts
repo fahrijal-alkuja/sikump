@@ -3,6 +3,7 @@ import { requireAuth } from '../../../utils/auth'
 import { prisma } from '../../../utils/prisma'
 import fs from 'node:fs'
 import path from 'node:path'
+import { getStoragePath } from '../../../utils/storage'
 
 export default defineEventHandler(async (event) => {
   requireAuth(event)
@@ -55,16 +56,7 @@ export default defineEventHandler(async (event) => {
       else if (table.includes('pajak')) folder = 'npwp'
       else if (table.includes('askes')) folder = 'askes'
 
-      // Determine base storage directory
-      // Priority: ENV variable, then external path, then fallback to public/assets
-      let baseStorage = process.env.STORAGE_PATH || '/www/wwwroot/sikump-storage'
-      
-      // If dev or the storage path doesn't exist yet, fallback to local for safety
-      if (process.env.NODE_ENV === 'development' || !fs.existsSync(baseStorage)) {
-        baseStorage = path.join(process.cwd(), 'public/assets')
-      }
-
-      const uploadDir = path.join(baseStorage, folder)
+      const uploadDir = getStoragePath(folder)
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true })
       
       fs.writeFileSync(path.join(uploadDir, newFilename), part.data)

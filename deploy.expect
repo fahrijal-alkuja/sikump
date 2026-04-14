@@ -1,0 +1,8 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn ssh server02 "cd /www/apps/sikump && git pull origin main && export PATH=/usr/local/bin:/usr/bin:/bin:/www/server/nodejs/v20.x/bin:/www/server/nodejs/v22.x/bin && npx prisma db push && npx prisma generate && rm -rf public/assets && npm run build && ln -s /www/wwwroot/sikump-storage public/assets && pm2 restart sikump"
+expect {
+    "*assword:*" { send "alkuja07\r"; exp_continue }
+    "*assphrase*" { send "alkuja07\r"; exp_continue }
+    "*yes/no*" { send "yes\r"; exp_continue }
+}

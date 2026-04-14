@@ -1,0 +1,8 @@
+#!/usr/bin/expect -f
+set timeout 10
+spawn ssh root@212.85.25.226 "find /www -maxdepth 3 -type d -iname '*sikump*' -o -type d -iname '*ayok*'"
+expect {
+    "*assword:*" { send "alkuja07\r"; exp_continue }
+    "*assphrase*" { send "alkuja07\r"; exp_continue }
+    "*yes/no*" { send "yes\r"; exp_continue }
+}

@@ -1,8 +1,9 @@
 import { defineEventHandler, readMultipartFormData, createError } from 'h3'
 import { requireAdmin } from '../../utils/auth'
 import { prisma } from '../../utils/prisma'
-import { writeFile, mkdir } from 'fs/promises'
+import { writeFile } from 'fs/promises'
 import path from 'path'
+import { getStoragePath } from '../../utils/storage'
 
 export default defineEventHandler(async (event) => {
   requireAdmin(event)
@@ -24,13 +25,13 @@ export default defineEventHandler(async (event) => {
         // Handle File Uploads
         const ext = path.extname(item.filename)
         const fileName = `${nik}_${Date.now()}${ext}`
-        const storageRoot = '/www/wwwroot/sikump-storage'
-        
         if (item.name === 'upload_ktp') {
-          await writeFile(path.join(storageRoot, 'KTP', fileName), item.data)
+          const ktpDir = getStoragePath('KTP')
+          await writeFile(path.join(ktpDir, fileName), item.data)
           upload_ktp_name = fileName
         } else if (item.name === 'upload_foto') {
-          await writeFile(path.join(storageRoot, 'foto', fileName), item.data)
+          const fotoDir = getStoragePath('foto')
+          await writeFile(path.join(fotoDir, fileName), item.data)
           upload_foto_name = fileName
         }
       } else {
