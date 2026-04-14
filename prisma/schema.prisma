@@ -269,7 +269,7 @@ model tb_anak {
   nama_anak   String? @db.VarChar(100)
 }
 
-model tmst_jafung {
+model riwayat_jafung {
   id          Int       @id @default(autoincrement())
   nik         String?   @db.VarChar(255)
   id_jafung   String?   @db.Char(11)
@@ -278,6 +278,8 @@ model tmst_jafung {
   tmt         String?   @db.VarChar(255)
   file_upload String?   @db.VarChar(255)
   last_upload DateTime? @db.Timestamp(0)
+
+  @@map("tmst_jafung")
 }
 
 model tmst_pangkat {
@@ -347,11 +349,3 @@ model user_sub_menu {
   is_activ Int?
 }
 
-model riwayat_jafung {
-  id        Int     @id @default(autoincrement())
-  nik       String? @db.VarChar(100)
-  id_jafung Int?
-  no_sk     String? @db.VarChar(100)
-  tmt       String? @db.VarChar(100)
-  upload_sk String? @db.VarChar(100)
-}
