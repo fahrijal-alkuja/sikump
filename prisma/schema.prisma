@@ -48,6 +48,8 @@ model riwayat_jabatan {
   is_aktiv       String?        @db.Char(2)
   status         String?        @db.Char(4)
   karyawan       tmst_karyawan? @relation(fields: [nik], references: [nik])
+
+  @@index([nik])
 }
 
 model riwayat_pelatihan {
@@ -60,6 +62,8 @@ model riwayat_pelatihan {
   tanggal_mulai DateTime?      @db.Date
   upload        String?        @db.VarChar(100)
   karyawan      tmst_karyawan? @relation(fields: [nik], references: [nik])
+
+  @@index([nik])
 }
 
 model riwayat_pendidikan {
@@ -71,6 +75,8 @@ model riwayat_pendidikan {
   upload_ijazah   String?        @db.VarChar(100)
   last_upload     DateTime?      @updatedAt @db.Timestamp(0)
   karyawan        tmst_karyawan? @relation(fields: [nik], references: [nik])
+
+  @@index([nik])
 }
 
 model riwayat_keluarga {
@@ -83,6 +89,8 @@ model riwayat_keluarga {
   upload_kk         String?        @db.VarChar(100)
   last_upload       DateTime?      @updatedAt @db.Timestamp(0)
   karyawan          tmst_karyawan? @relation(fields: [nik], references: [nik])
+
+  @@index([nik])
 }
 
 model riwayat_pengangkatan {
@@ -98,6 +106,8 @@ model riwayat_pengangkatan {
   upload_sk          String?        @db.VarChar(100)
   last_upload        DateTime?      @updatedAt @db.Timestamp(0)
   karyawan           tmst_karyawan? @relation(fields: [nik], references: [nik])
+
+  @@index([nik])
 }
 
 model tmst_pajak {
@@ -106,6 +116,8 @@ model tmst_pajak {
   nomor_npwp  String?        @db.VarChar(102)
   upload_npwp String?        @db.VarChar(102)
   karyawan    tmst_karyawan? @relation(fields: [nik], references: [nik])
+
+  @@index([nik])
 }
 
 model tmst_askes {
@@ -115,6 +127,8 @@ model tmst_askes {
   nama_askes   String?        @db.VarChar(100)
   upload_askes String?        @db.VarChar(100)
   karyawan     tmst_karyawan? @relation(fields: [nik], references: [nik])
+
+  @@index([nik])
 }
 
 model tmst_biro {
@@ -245,6 +259,8 @@ model riwayat_mutasi {
   tempat_baru      String? @db.VarChar(100)
   tanggal_mutasi   String? @db.VarChar(100)
   upload_sk_mutasi String? @db.VarChar(100)
+
+  @@index([nik])
 }
 
 model riwayat_pendidikan_dosen {
@@ -255,6 +271,8 @@ model riwayat_pendidikan_dosen {
   tahun_lulus     String?   @db.VarChar(100)
   upload_ijazah   String?   @db.VarChar(100)
   last_upload     DateTime? @db.Timestamp(0)
+
+  @@index([nik])
 }
 
 model tb_anak {
@@ -273,6 +291,7 @@ model riwayat_jafung {
   file_upload String?   @db.VarChar(255)
   last_upload DateTime? @db.Timestamp(0)
 
+  @@index([nik])
   @@map("tmst_jafung")
 }
 
@@ -285,6 +304,8 @@ model tmst_pangkat {
   upload_sk   String?        @db.VarChar(255)
   last_update DateTime?      @db.Timestamp(0)
   karyawan    tmst_karyawan? @relation(fields: [nik], references: [nik])
+
+  @@index([nik])
 }
 
 model tmst_sertifikasi {
@@ -298,6 +319,8 @@ model tmst_sertifikasi {
   upload_sk_sertifikasi String?        @db.VarChar(255)
   last_update           DateTime?      @db.Timestamp(0)
   karyawan              tmst_karyawan? @relation(fields: [nik], references: [nik])
+
+  @@index([nik])
 }
 
 model tmst_skpns {
@@ -306,6 +329,8 @@ model tmst_skpns {
   nomor_skcpns String? @db.VarChar(255)
   nomor_skpns  String? @db.VarChar(255)
   upload_skpns String? @db.VarChar(255)
+
+  @@index([nik])
 }
 
 model tref_jafung {
