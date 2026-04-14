@@ -21,14 +21,14 @@ const getBiroName = (id: string | number) => {
   
   // Try Biro first
   if (biroData.value && biroData.value.length > 0) {
-    const b = biroData.value.find((x: any) => String(x.id_biro).trim() === searchId)
-    if (b) return b.nama_biro
+    const b = biroData.value.find((x: any) => String(x.id).trim() === searchId)
+    if (b) return b.nama
   }
   
   // Try Prodi next
   if (prodiData.value && prodiData.value.length > 0) {
-    const p = prodiData.value.find((x: any) => String(x.kode_program_studi).trim() === searchId)
-    if (p) return p.nama_program_studi
+    const p = prodiData.value.find((x: any) => String(x.id).trim() === searchId)
+    if (p) return p.nama
   }
 
   return id
