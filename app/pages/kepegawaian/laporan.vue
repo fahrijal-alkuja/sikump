@@ -265,6 +265,7 @@ h1 { font-size: 2.5rem; font-weight: 900; color: #1e293b; letter-spacing: -1px; 
 .radio-group { display: flex; background: #f1f5f9; padding: 0.3rem; border-radius: 12px; }
 .radio-group button { flex: 1; padding: 0.6rem; border: none; background: transparent; color: #64748b; font-weight: 700; border-radius: 10px; cursor: pointer; transition: 0.2s; }
 .radio-group button.active { background: white; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.filter-panel .glass-input-lux { width: 100%; max-width: 100%; box-sizing: border-box; }
 
 .results-toolbar { padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-radius: 20px; background: white; border: 1px solid var(--glass-border); }
 .results-info { font-weight: 700; color: #475569; }
