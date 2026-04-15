@@ -208,7 +208,7 @@ const handleUpdate = async () => {
           <input type="file" ref="ktpFile" class="glass-input" accept=".jpg,.jpeg,.png,.pdf" />
         </div>
         <div class="form-group" v-if="employee.type === 'dosen'">
-          <label>Program Studi</label>
+          <label>Homebase (Program Studi)</label>
           <select v-model="form.unit_id" class="glass-input">
             <option value="">Pilih Prodi</option>
             <option v-for="p in prodis" :key="p.id" :value="p.id">{{ p.nama }}</option>

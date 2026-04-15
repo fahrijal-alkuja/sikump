@@ -1,5 +1,6 @@
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { PrismaClient } from '@prisma/client'
+import { requireAuth } from '../../utils/auth'
 
 const prisma = new PrismaClient()
 
@@ -17,8 +18,15 @@ export default defineEventHandler(async (event) => {
 
     if (karyawan) {
       // Manual fetch for Tendik to avoid include errors
-      const [jabatan, pendidikan, pelatihan, keluarga, pengangkatan, pajak, askes, pangkat, sertifikasi] = await Promise.all([
-        prisma.riwayat_jabatan.findMany({ where: { nik } }),
+      const [jabatanRaw, pendidikan, pelatihan, keluarga, pengangkatan, pajak, askes, pangkat, sertifikasi] = await Promise.all([
+        prisma.$queryRaw`
+          SELECT rj.*, tj.nama_jabatan, tb.nama_biro 
+          FROM riwayat_jabatan rj 
+          LEFT JOIN tref_jabatan tj ON rj.id_jabatan = tj.id_jabatan 
+          LEFT JOIN tmst_biro tb ON rj.id_biro = tb.id_biro 
+          WHERE rj.nik = ${nik}
+          ORDER BY rj.id DESC
+        `,
         prisma.riwayat_pendidikan.findMany({ where: { nik } }),
         prisma.riwayat_pelatihan.findMany({ where: { nik } }),
         prisma.riwayat_keluarga.findMany({ where: { nik } }),
@@ -29,19 +37,11 @@ export default defineEventHandler(async (event) => {
         prisma.tmst_sertifikasi.findMany({ where: { nik } })
       ])
 
-      // Fetch latest unit
-      const latestJabatan: any = await prisma.$queryRaw`
-        SELECT b.nama_biro as unit 
-        FROM riwayat_jabatan rj 
-        JOIN tmst_biro b ON rj.id_biro = b.id_biro 
-        WHERE rj.nik = ${nik} 
-        ORDER BY rj.id DESC 
-        LIMIT 1
-      `
+      const jabatan: any = jabatanRaw
       data = { 
         ...karyawan, 
         type: 'tendik',
-        unit: latestJabatan[0]?.unit || 'Kantor Pusat',
+        unit: jabatan[0]?.nama_biro || 'Kantor Pusat',
         riwayat_jabatan: jabatan,
         riwayat_pendidikan: pendidikan,
         riwayat_pelatihan: pelatihan,
@@ -64,8 +64,15 @@ export default defineEventHandler(async (event) => {
 
       if (dosen) {
         // Manually fetch related data
-        const [jabatan, pendidikan, pelatihan, keluarga, pengangkatan, pajak, askes, jafung, pangkat, sertifikasi] = await Promise.all([
-          prisma.riwayat_jabatan.findMany({ where: { nik } }),
+        const [jabatanRaw, pendidikan, pelatihan, keluarga, pengangkatan, pajak, askes, jafung, pangkat, sertifikasi] = await Promise.all([
+          prisma.$queryRaw`
+            SELECT rj.*, tj.nama_jabatan, tb.nama_biro 
+            FROM riwayat_jabatan rj 
+            LEFT JOIN tref_jabatan tj ON rj.id_jabatan = tj.id_jabatan 
+            LEFT JOIN tmst_biro tb ON rj.id_biro = tb.id_biro 
+            WHERE rj.nik = ${nik}
+            ORDER BY rj.id DESC
+          `,
           prisma.riwayat_pendidikan.findMany({ where: { nik } }),
           prisma.riwayat_pelatihan.findMany({ where: { nik } }),
           prisma.riwayat_keluarga.findMany({ where: { nik } }),
@@ -78,9 +85,28 @@ export default defineEventHandler(async (event) => {
           prisma.tmst_sertifikasi.findMany({ where: { nik } })
         ])
 
+        const jabatan: any = jabatanRaw
+        const unitRes: any = await prisma.$queryRaw`
+          SELECT 
+            COALESCE(
+              (SELECT b.nama_biro FROM riwayat_jabatan rj 
+               JOIN tmst_biro b ON rj.id_biro = b.id_biro 
+               WHERE rj.nik = ${nik} AND (rj.is_aktiv = '1' OR rj.is_aktiv = 'Y' OR rj.is_aktiv IS NULL)
+               ORDER BY rj.id DESC LIMIT 1),
+              ps.nama_program_studi
+            ) as unit,
+            ps.nama_program_studi as homebase
+          FROM tmst_dosen d
+          LEFT JOIN mst_program_studi ps ON d.kode_program_studi = ps.kode_program_studi
+          WHERE d.nik = ${nik}
+        `
+        const unitData = unitRes[0] || {}
+
         data = {
           ...dosen,
-          unit: dosen.unit || '-',
+          unit: unitData.unit || dosen.unit || '-',
+          homebase: unitData.homebase || '-',
+          is_struktural: unitData.unit !== unitData.homebase,
           type: 'dosen',
           nama: dosen.nama_dosen,
           riwayat_jabatan: jabatan,

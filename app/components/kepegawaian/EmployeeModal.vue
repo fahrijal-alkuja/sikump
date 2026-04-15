@@ -163,7 +163,7 @@ const parseLegacyDate = (dateStr: string) => {
                   <input v-model="form.nidn" type="text" class="glass-input" />
                 </div>
                 <div class="form-group">
-                  <label>Program Studi</label>
+                  <label>Homebase (Program Studi)</label>
                   <select v-model="form.unit_id" class="glass-input">
                     <option value="">Pilih Prodi</option>
                     <option v-for="p in prodis" :key="p.id" :value="p.id">{{ p.nama }}</option>

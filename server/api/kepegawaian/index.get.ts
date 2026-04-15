@@ -37,7 +37,14 @@ export default defineEventHandler(async (event) => {
           DATE_FORMAT(d.tanggal_lahir, '%d-%m-%Y') as tanggal_lahir, 
           d.jenis_kelamin, d.telepon, d.status_aktif,
           d.kode_jenjang_pendidikan as edu_code,
-          ps.nama_program_studi as unit,
+          ps.nama_program_studi as homebase,
+          COALESCE(
+            (SELECT b.nama_biro FROM riwayat_jabatan rj 
+             JOIN tmst_biro b ON rj.id_biro = b.id_biro 
+             WHERE rj.nik = d.nik AND (rj.is_aktiv = '1' OR rj.is_aktiv = 'Y' OR rj.is_aktiv IS NULL)
+             ORDER BY rj.id DESC LIMIT 1),
+            ps.nama_program_studi
+          ) as unit,
           (SELECT tj.id_jafung FROM tmst_jafung tj WHERE tj.nik = d.nik ORDER BY tj.id DESC LIMIT 1) as current_jafung,
           (
             COALESCE((CASE WHEN d.upload_ktp != '' AND d.upload_ktp IS NOT NULL THEN 1 ELSE 0 END), 0) +
@@ -54,9 +61,9 @@ export default defineEventHandler(async (event) => {
       `
       
       if (subProdiCodes.length > 0) {
-        sql += ` AND d.kode_program_studi IN (${subProdiCodes.map(c => `'${c}'`).join(',')})`
+        sql += ` AND (d.kode_program_studi IN (${subProdiCodes.map(c => `'${c}'`).join(',')}) OR d.nik IN (SELECT nik FROM riwayat_jabatan WHERE id_biro IN (${subProdiCodes.map(c => `'${c}'`).join(',')})))`
       } else if (biro_id) {
-        sql += ` AND d.kode_program_studi = '${biro_id}'`
+        sql += ` AND (d.kode_program_studi = '${biro_id}' OR d.nik IN (SELECT nik FROM riwayat_jabatan WHERE id_biro = '${biro_id}' AND (is_aktiv = '1' OR is_aktiv = 'Y' OR is_aktiv IS NULL)))`
       }
 
       if (education) sql += ` AND d.kode_jenjang_pendidikan = '${education}'`
@@ -86,6 +93,7 @@ export default defineEventHandler(async (event) => {
           docs_count: docCount,
           nuptk: d.nuptk || '-', 
           ikatan_kerja: 'Dosen',
+          is_struktural: d.unit !== d.homebase,
           pendidikan_terakhir: eduLabel,
           data_quality: Math.round((docCount / 7) * 100)
         }

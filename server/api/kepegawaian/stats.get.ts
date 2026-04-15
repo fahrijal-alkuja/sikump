@@ -148,14 +148,23 @@ export default defineEventHandler(async (event) => {
       ORDER BY years_left ASC LIMIT 10
     `)
 
-    // 8. HEATMAP: DOSEN
+    // 8. HEATMAP: DOSEN (Based on Current Deployment/Structural)
     const heatmapDosenRes: any = await runQuery(`
-      SELECT ps.nama_program_studi as unit, COUNT(*) as count 
-      FROM tmst_dosen d 
-      JOIN mst_program_studi ps ON d.kode_program_studi = ps.kode_program_studi
-      WHERE (d.status_aktif = '1' OR d.status_aktif IS NULL OR d.status_aktif = '')
-      AND d.nik NOT LIKE '0000%' ${dFilter}
-      GROUP BY ps.nama_program_studi 
+      SELECT unit, COUNT(*) as count FROM (
+        SELECT 
+           COALESCE(
+            (SELECT b.nama_biro FROM riwayat_jabatan rj 
+             JOIN tmst_biro b ON rj.id_biro = b.id_biro 
+             WHERE rj.nik = d.nik AND (rj.is_aktiv = '1' OR rj.is_aktiv = 'Y' OR rj.is_aktiv IS NULL)
+             ORDER BY rj.id DESC LIMIT 1),
+            ps.nama_program_studi
+          ) as unit
+        FROM tmst_dosen d 
+        LEFT JOIN mst_program_studi ps ON d.kode_program_studi = ps.kode_program_studi
+        WHERE (d.status_aktif = '1' OR d.status_aktif IS NULL OR d.status_aktif = '')
+        AND d.nik NOT LIKE '0000%' ${dFilter}
+      ) as sub WHERE unit IS NOT NULL
+      GROUP BY unit
       ORDER BY count DESC
     `)
 

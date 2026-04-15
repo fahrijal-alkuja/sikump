@@ -136,12 +136,13 @@ const handleExportPDF = async () => {
   const jobRows = (e.riwayat_jabatan || []).map((j: any) => [
     j.no_sk || '-',
     j.tmt || '-',
-    `${j.ikatan_kerja || '-'} (${j.is_aktiv === 'Y' ? 'Aktif' : 'Non-aktif'})`
+    j.nama_jabatan || '-',
+    `${j.nama_biro || '-'} (${j.is_aktiv === 'Y' ? 'Aktif' : 'Non-aktif'})`
   ])
 
   autoTable(doc, {
-    head: [['NO. SK', 'TMT', 'KETERANGAN']],
-    body: jobRows.length ? jobRows : [['-', '-', 'Data tidak tersedia']],
+    head: [['NO. SK', 'TMT', 'JABATAN', 'UNIT / KETERANGAN']],
+    body: jobRows.length ? jobRows : [['-', '-', '-', 'Data tidak tersedia']],
     startY: currentY + 6,
     theme: 'grid',
     headStyles: { fillColor: [30, 41, 59] },
@@ -296,17 +297,19 @@ const handleExportPDF = async () => {
             <tr>
               <th>No. SK</th>
               <th>TMT</th>
-              <th>Keterangan</th>
+              <th>Nama Jabatan</th>
+              <th>Unit / Keterangan</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="job in employee.riwayat_jabatan" :key="job.id">
               <td>{{ job.no_sk || '-' }}</td>
               <td>{{ job.tmt || '-' }}</td>
-              <td>{{ job.ikatan_kerja || '-' }} ({{ job.is_aktiv === 'Y' ? 'Aktif' : 'Non-aktif' }})</td>
+              <td style="font-weight: 700; color: var(--primary);">{{ job.nama_jabatan || '-' }}</td>
+              <td>{{ job.nama_biro || '-' }} ({{ job.is_aktiv === 'Y' ? 'Aktif' : 'Non-aktif' }})</td>
             </tr>
             <tr v-if="!employee.riwayat_jabatan?.length">
-              <td colspan="3" class="text-center">Data tidak tersedia</td>
+              <td colspan="4" class="text-center">Data tidak tersedia</td>
             </tr>
           </tbody>
         </table>

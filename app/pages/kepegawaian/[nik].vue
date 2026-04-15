@@ -95,8 +95,13 @@ const getJafungName = (code: string | number) => {
                   </div>
                   <div class="badge-divider"></div>
                   <div class="badge-item">
-                    <span class="lbl">{{ employeeData.data.ikatan_kerja === '1' ? 'HOMEBASE' : 'UNIT KERJA / BIRO' }}</span>
-                    <span class="val">{{ employeeData.data.unit || '-' }}</span>
+                    <span class="lbl">{{ (employeeData.data.type === 'dosen' || employeeData.data.ikatan_kerja === '1') ? 'HOMEBASE' : 'UNIT KERJA / BIRO' }}</span>
+                    <span class="val">{{ employeeData.data.homebase || '-' }}</span>
+                  </div>
+                  <div class="badge-divider" v-if="employeeData.data.is_struktural"></div>
+                  <div class="badge-item" v-if="employeeData.data.is_struktural">
+                    <span class="lbl">PENUGASAN STRUKTURAL</span>
+                    <span class="val">{{ employeeData.data.unit }}</span>
                   </div>
                 </div>
               </div>
