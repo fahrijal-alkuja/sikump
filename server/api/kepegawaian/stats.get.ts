@@ -45,7 +45,8 @@ export default defineEventHandler(async (event) => {
     // Parallel execution for speed
     const [
       dosenRes, karyawanRes, jafungRes, alertsRes, s3Res, s2Res, 
-      dTrRes, tTrRes, rDRes, rTRes, hmDRes, hmTRes, ikDRes, ikTRes, certRes
+      dTrRes, tTrRes, rDRes, rTRes, hmDRes, hmTRes, ikDRes, ikTRes, certRes,
+      dTrList, tTrList
     ]: any[] = await Promise.all([
       runQuery(`SELECT COUNT(*) as count FROM tmst_dosen d WHERE nik NOT LIKE '0000%' ${dFilter}`),
       runQuery(`SELECT COUNT(*) as count FROM tmst_karyawan k WHERE k.nik NOT LIKE '0000%' AND (k.status_aktif='1' OR k.status_aktif IS NULL OR k.status_aktif='') AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter}`),
@@ -57,11 +58,13 @@ export default defineEventHandler(async (event) => {
       runQuery(`SELECT COUNT(DISTINCT rp.nik) as count FROM riwayat_pelatihan rp JOIN tmst_karyawan k ON rp.nik = k.nik WHERE k.nik NOT LIKE '0000%' AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter}`),
       runQuery(`SELECT d.nama_dosen as nama, d.nik, d.tanggal_lahir, (CASE WHEN (SELECT id_jafung FROM tmst_jafung WHERE nik = d.nik ORDER BY id DESC LIMIT 1) = 4 THEN 70 ELSE 65 END - (YEAR(CURDATE()) - YEAR(d.tanggal_lahir))) as years_left FROM tmst_dosen d WHERE d.nik NOT LIKE '0000%' AND (d.status_aktif='1' OR d.status_aktif IS NULL OR d.status_aktif='') AND d.tanggal_lahir IS NOT NULL ${dFilter} HAVING years_left <= 5 AND years_left >= -5 ORDER BY years_left ASC LIMIT 10`),
       runQuery(`SELECT k.nama, k.nik, k.tanggal_lahir, (58 - (YEAR(CURDATE()) - YEAR(k.tanggal_lahir))) as years_left FROM tmst_karyawan k WHERE k.nik NOT LIKE '0000%' AND (k.status_aktif='1' OR k.status_aktif IS NULL OR k.status_aktif='') AND k.tanggal_lahir IS NOT NULL AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter} HAVING years_left <= 5 AND years_left >= -5 ORDER BY years_left ASC LIMIT 10`),
-      runQuery(`SELECT unit, COUNT(*) as count FROM (SELECT COALESCE((SELECT b.nama_biro FROM riwayat_jabatan rj JOIN tmst_biro b ON rj.id_biro = b.id_biro WHERE rj.nik = d.nik ORDER BY rj.id DESC LIMIT 1), ps.nama_program_studi) as unit FROM tmst_dosen d LEFT JOIN mst_program_studi ps ON d.kode_program_studi = ps.kode_program_studi WHERE (d.status_aktif='1' OR d.status_aktif IS NULL OR d.status_aktif='') AND d.nik NOT LIKE '0000%' ${dFilter}) as sub WHERE unit IS NOT NULL GROUP BY unit ORDER BY count DESC`),
-      runQuery(`SELECT unit, COUNT(*) as count FROM (SELECT (SELECT b.nama_biro FROM riwayat_jabatan rj JOIN tmst_biro b ON rj.id_biro = b.id_biro WHERE rj.nik = k.nik ORDER BY rj.id DESC LIMIT 1) as unit FROM tmst_karyawan k WHERE (k.status_aktif='1' OR k.status_aktif IS NULL OR k.status_aktif='') AND k.nik NOT LIKE '0000%' AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter}) as sub WHERE unit IS NOT NULL GROUP BY unit ORDER BY count DESC`),
-      runQuery(`SELECT ikatan_kerja as label, COUNT(*) as count FROM (SELECT rj.nik, rj.ikatan_kerja FROM riwayat_jabatan rj JOIN tmst_dosen d ON rj.nik = d.nik WHERE rj.id IN (SELECT MAX(id) FROM riwayat_jabatan GROUP BY nik) AND d.nik NOT LIKE '0000%' ${dFilter}) as st GROUP BY ikatan_kerja`),
+      runQuery(`SELECT unit, COUNT(*) as count FROM (SELECT COALESCE((SELECT b.nama_biro FROM riwayat_jabatan rj JOIN tmst_biro b ON rj.id_biro = b.id_biro WHERE rj.nik = d.nik AND (rj.is_aktiv='1' OR rj.is_aktiv='Y' OR rj.is_aktiv IS NULL) ORDER BY rj.id DESC LIMIT 1), ps.nama_program_studi) as unit FROM tmst_dosen d LEFT JOIN mst_program_studi ps ON d.kode_program_studi = ps.kode_program_studi WHERE (d.status_aktif='1' OR d.status_aktif IS NULL OR d.status_aktif='') AND d.nik NOT LIKE '0000%' ${dFilter}) as sub WHERE unit IS NOT NULL GROUP BY unit ORDER BY count DESC`),
+      runQuery(`SELECT unit, COUNT(*) as count FROM (SELECT (SELECT b.nama_biro FROM riwayat_jabatan rj JOIN tmst_biro b ON rj.id_biro = b.id_biro WHERE rj.nik = k.nik AND (rj.is_aktiv='1' OR rj.is_aktiv='Y' OR rj.is_aktiv IS NULL) ORDER BY rj.id DESC LIMIT 1) as unit FROM tmst_karyawan k WHERE (k.status_aktif='1' OR k.status_aktif IS NULL OR k.status_aktif='') AND k.nik NOT LIKE '0000%' AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter}) as sub WHERE unit IS NOT NULL GROUP BY unit ORDER BY count DESC`),
+      runQuery(`SELECT ikatan_kerja as label, COUNT(*) as count FROM (SELECT rj.nik, rj.ikatan_kerja FROM riwayat_jabatan rj JOIN tmst_dosen d ON rj.nik = d.nik WHERE rj.id IN (SELECT MAX(id) FROM riwayat_jabatan GROUP BY nik) AND d.nik NOT LIKE '0000%' ${dFilter} ) as st GROUP BY ikatan_kerja`),
       runQuery(`SELECT ikatan_kerja as label, COUNT(*) as count FROM tmst_karyawan k WHERE k.nik NOT LIKE '0000%' AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter} GROUP BY ikatan_kerja`),
-      runQuery(`SELECT COUNT(DISTINCT s.nik) as count FROM tmst_sertifikasi s JOIN tmst_dosen d ON s.nik = d.nik WHERE d.nik NOT LIKE '0000%' ${dFilter}`)
+      runQuery(`SELECT COUNT(DISTINCT s.nik) as count FROM tmst_sertifikasi s JOIN tmst_dosen d ON s.nik = d.nik WHERE d.nik NOT LIKE '0000%' ${dFilter}`),
+      runQuery(`SELECT d.nama_dosen as nama, d.nik, ps.nama_program_studi as unit FROM tmst_dosen d JOIN mst_program_studi ps ON d.kode_program_studi = ps.kode_program_studi WHERE d.nik IN (SELECT DISTINCT nik FROM riwayat_pelatihan) ${dFilter} LIMIT 10`),
+      runQuery(`SELECT k.nama, k.nik, (SELECT b.nama_biro FROM riwayat_jabatan rj JOIN tmst_biro b ON rj.id_biro = b.id_biro WHERE rj.nik = k.nik ORDER BY rj.id DESC LIMIT 1) as unit FROM tmst_karyawan k WHERE k.nik IN (SELECT DISTINCT nik FROM riwayat_pelatihan) AND k.nik NOT IN (SELECT nik FROM tmst_dosen) ${kFilter} LIMIT 10`)
     ])
 
     const dCount = Number(dosenRes[0]?.count || 0)
@@ -78,8 +81,19 @@ export default defineEventHandler(async (event) => {
 
     const finalStats = {
       total: dCount + kCount,
-      dosen: { total: dCount, jafung, trained: Number(dTrRes[0]?.count || 0), certified: Number(certRes[0]?.count || 0), s3: s3A, s2: Number(s2Res[0]?.count || 0), ikatanKerja: ikDRes },
-      tendik: { total: kCount, trained: Number(tTrRes[0]?.count || 0), s3: 0, s2: 0, s1: 0, sma: 0, ikatanKerja: ikTRes },
+      dosen: { 
+        total: dCount, jafung, 
+        trained: Number(dTrRes[0]?.count || 0), 
+        trainedList: dTrList, 
+        certified: Number(certRes[0]?.count || 0), 
+        s3: s3A, s2: Number(s2Res[0]?.count || 0), ikatanKerja: ikDRes 
+      },
+      tendik: { 
+        total: kCount, 
+        trained: Number(tTrRes[0]?.count || 0), 
+        trainedList: tTrList,
+        s3: 0, s2: 0, s1: 0, sma: 0, ikatanKerja: ikTRes 
+      },
       alerts: alertsRes.map((a: any) => ({ ...a, identitas: a.nuptk || a.nik })),
       matrix: { s3Actual: s3A, s3Target: Math.ceil(dCount * 0.4), s2Actual: Number(s2Res[0]?.count || 0) },
       retirementDosen: rDRes,
