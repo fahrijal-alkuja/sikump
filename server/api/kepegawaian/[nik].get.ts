@@ -1,6 +1,6 @@
 import { defineEventHandler, getRouterParam, createError } from 'h3'
 import { PrismaClient } from '@prisma/client'
-import { requireAuth } from '../../utils/auth'
+import { requireAuth, requireSelfOrAdmin } from '../../utils/auth'
 
 const prisma = new PrismaClient()
 
@@ -9,12 +9,15 @@ export default defineEventHandler(async (event) => {
     const nik = getRouterParam(event, 'nik')
     if (!nik) throw new Error('NIK is required')
 
+    requireSelfOrAdmin(event, nik)
+
     let data: any = null
     
     // Check in tmst_karyawan (Tendik)
     const karyawan = await prisma.tmst_karyawan.findUnique({
       where: { nik }
     })
+    console.log('Karyawan Data from DB for NIK:', nik, karyawan)
 
     if (karyawan) {
       // Manual fetch for Tendik to avoid include errors
@@ -130,9 +133,9 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // --- Role-Based Security Check ---
-    const session = requireAuth(event)
-    if (session.role === 'prodi' && session.unit) {
+    // --- Role-Based Security Check for Prodi ---
+    const session = useServerSession(event)
+    if (session && session.role === 'prodi' && session.unit) {
       const u = session.unit.trim()
       
       if (data.type === 'dosen') {

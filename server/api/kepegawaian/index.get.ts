@@ -16,17 +16,18 @@ export default defineEventHandler(async (event) => {
     const isProdi = user.role === 'prodi'
     const userUnit = user.unit || ''
 
+    const params: any[] = []
     let employees: any[] = []
 
     if (ikatan_kerja === '1') {
       // --- DOSEN LOGIC ---
       let subProdiCodes: string[] = []
       if (isProdi && userUnit) {
-        const prodiList: any[] = await prisma.$queryRawUnsafe(`
+        const pList: any[] = await prisma.$queryRawUnsafe(`
           SELECT kode_program_studi FROM mst_program_studi 
-          WHERE kode_program_studi = '${userUnit.trim()}' OR kode_fakultas = '${userUnit.trim()}'
-        `)
-        subProdiCodes = prodiList.map(p => p.kode_program_studi)
+          WHERE kode_program_studi = ? OR kode_fakultas = ?
+        `, userUnit.trim(), userUnit.trim())
+        subProdiCodes = pList.map(p => p.kode_program_studi)
         
         if (subProdiCodes.length === 0) return { success: true, data: [] }
       }
@@ -61,25 +62,37 @@ export default defineEventHandler(async (event) => {
       `
       
       if (subProdiCodes.length > 0) {
-        sql += ` AND (d.kode_program_studi IN (${subProdiCodes.map(c => `'${c}'`).join(',')}) OR d.nik IN (SELECT nik FROM riwayat_jabatan WHERE id_biro IN (${subProdiCodes.map(c => `'${c}'`).join(',')})))`
+        sql += ` AND (d.kode_program_studi IN (${subProdiCodes.map(() => '?').join(',')}) OR d.nik IN (SELECT nik FROM riwayat_jabatan WHERE id_biro IN (${subProdiCodes.map(() => '?').join(',')})))`
+        params.push(...subProdiCodes, ...subProdiCodes)
       } else if (biro_id) {
-        sql += ` AND (d.kode_program_studi = '${biro_id}' OR d.nik IN (SELECT nik FROM riwayat_jabatan WHERE id_biro = '${biro_id}' AND (is_aktiv = '1' OR is_aktiv = 'Y' OR is_aktiv IS NULL)))`
+        sql += ` AND (d.kode_program_studi = ? OR d.nik IN (SELECT nik FROM riwayat_jabatan WHERE id_biro = ? AND (is_aktiv = '1' OR is_aktiv = 'Y' OR is_aktiv IS NULL)))`
+        params.push(biro_id, biro_id)
       }
 
-      if (education) sql += ` AND d.kode_jenjang_pendidikan = '${education}'`
+      if (education) {
+        sql += ` AND d.kode_jenjang_pendidikan = ?`
+        params.push(education)
+      }
+
       if (status === '1') {
         sql += ` AND (d.status_aktif = '1' OR d.status_aktif IS NULL OR d.status_aktif = '')`
       } else if (status) {
-        sql += ` AND d.status_aktif = '${status}'`
+        sql += ` AND d.status_aktif = ?`
+        params.push(status)
       }
-      if (search) sql += ` AND (d.nama_dosen LIKE '%${search.replace(/'/g, "''")}%' OR d.nik LIKE '%${search.replace(/'/g, "''")}%')`
+
+      if (search) {
+        sql += ` AND (d.nama_dosen LIKE ? OR d.nik LIKE ?)`
+        params.push(`%${search}%`, `%${search}%`)
+      }
       
       if (jafung) {
-        sql = `SELECT * FROM (${sql}) as base WHERE current_jafung = '${jafung}'`
+        sql = `SELECT * FROM (${sql}) as base WHERE current_jafung = ?`
+        params.push(jafung)
       }
 
       sql += ` ORDER BY nama ASC LIMIT 500`
-      const data: any[] = await prisma.$queryRawUnsafe(sql)
+      const data: any[] = await prisma.$queryRawUnsafe(sql, ...params)
       employees = data.map(d => {
         const docCount = Number(d.docs_count || 0)
         let eduLabel = 'Lainnya'
@@ -126,22 +139,34 @@ export default defineEventHandler(async (event) => {
         WHERE k.nik NOT LIKE '0000%'
       `
       
+      const tParams: any[] = []
       if (isProdi && userUnit) {
-        sql += ` AND k.nik IN (SELECT TRIM(rj.nik) FROM riwayat_jabatan rj WHERE TRIM(rj.id_biro) = '${userUnit.trim()}')`
+        sql += ` AND k.nik IN (SELECT TRIM(rj.nik) FROM riwayat_jabatan rj WHERE TRIM(rj.id_biro) = ?)`
+        tParams.push(userUnit.trim())
       } else if (biro_id) {
-        sql += ` AND k.nik IN (SELECT TRIM(rj.nik) FROM riwayat_jabatan rj WHERE TRIM(rj.id_biro) = '${biro_id}')`
+        sql += ` AND k.nik IN (SELECT TRIM(rj.nik) FROM riwayat_jabatan rj WHERE TRIM(rj.id_biro) = ?)`
+        tParams.push(biro_id.trim())
       }
 
-      if (education) sql += ` AND EXISTS (SELECT 1 FROM riwayat_pendidikan rp WHERE rp.nik = k.nik AND rp.id_pendidikan = '${education}')`
+      if (education) {
+        sql += ` AND EXISTS (SELECT 1 FROM riwayat_pendidikan rp WHERE rp.nik = k.nik AND rp.id_pendidikan = ?)`
+        tParams.push(education)
+      }
+
       if (status === '1') {
         sql += ` AND (k.status_aktif = '1' OR k.status_aktif IS NULL OR k.status_aktif = '')`
       } else if (status) {
-        sql += ` AND k.status_aktif = '${status}'`
+        sql += ` AND k.status_aktif = ?`
+        tParams.push(status)
       }
-      if (search) sql += ` AND (k.nama LIKE '%${search.replace(/'/g, "''")}%' OR k.nik LIKE '%${search.replace(/'/g, "''")}%')`
+
+      if (search) {
+        sql += ` AND (k.nama LIKE ? OR k.nik LIKE ?)`
+        tParams.push(`%${search}%`, `%${search}%`)
+      }
 
       sql += ` ORDER BY nama ASC LIMIT 500`
-      const data: any[] = await prisma.$queryRawUnsafe(sql)
+      const data: any[] = await prisma.$queryRawUnsafe(sql, ...tParams)
       employees = data.map(k => {
         const docCount = Number(k.docs_count || 0)
         let eduLabel = 'Lainnya'

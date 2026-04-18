@@ -30,7 +30,10 @@ const form = ref({
   telepon: '',
   alamat: '',
   pendidikan: '',
-  ikatan_kerja: props.type
+  ikatan_kerja: '',
+  status_aktif: '1',
+  nama_ibu_kandung: '',
+  agama: ''
 })
 
 // Fetch Reference Data
@@ -58,7 +61,10 @@ watch(() => props.show, (newVal) => {
       telepon: e.telepon || '',
       alamat: e.alamat || '',
       pendidikan: e.kode_jenjang_pendidikan || '',
-      ikatan_kerja: props.type
+      ikatan_kerja: e.ikatan_kerja || '',
+      status_aktif: e.status_aktif || '1',
+      nama_ibu_kandung: e.nama_ibu_kandung || '',
+      agama: e.agama || ''
     }
   } else if (newVal) {
     resetForm()
@@ -106,7 +112,9 @@ const resetForm = () => {
   form.value = {
     nik: '', nama: '', nuptk: '', nidn: '', unit_id: '',
     jenis_kelamin: 'L', tempat_lahir: '', tanggal_lahir: '',
-    telepon: '', alamat: '', pendidikan: '', ikatan_kerja: props.type
+    telepon: '', alamat: '', pendidikan: '', 
+    ikatan_kerja: '', status_aktif: '1', 
+    nama_ibu_kandung: '', agama: ''
   }
 }
 
@@ -197,6 +205,36 @@ const parseLegacyDate = (dateStr: string) => {
                   <option value="L">Laki-laki</option>
                   <option value="P">Perempuan</option>
                 </select>
+              </div>
+              <div class="form-group">
+                <label>Agama</label>
+                <input v-model="form.agama" type="text" class="glass-input" placeholder="Islam, Kristen, dll" />
+              </div>
+              <div class="form-group">
+                <label>Ikatan Kerja</label>
+                <select v-model="form.ikatan_kerja" class="glass-input">
+                  <option value="">Pilih Ikatan Kerja...</option>
+                  <option value="DTY">Dosen Tetap Yayasan</option>
+                  <option value="DPK">Dosen PNS DPK</option>
+                  <option value="DPK2">Dosen dengan Perjanjian Kerja</option>
+                  <option value="1">Tendik Tetap</option>
+                  <option value="2">Tendik Kontrak</option>
+                  <option value="3">Pegawai Luar Biasa</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Status Keaktifan</label>
+                <select v-model="form.status_aktif" class="glass-input">
+                  <option value="1">Aktif</option>
+                  <option value="2">Tugas Belajar</option>
+                  <option value="3">Izin Belajar</option>
+                  <option value="4">Cuti</option>
+                  <option value="5">Keluar / Non-Aktif</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Nama Ibu Kandung</label>
+                <input v-model="form.nama_ibu_kandung" type="text" class="glass-input" placeholder="Wajib untuk PDDikti" />
               </div>
               <div class="form-group">
                 <label>Telepon / WA</label>

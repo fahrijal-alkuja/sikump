@@ -27,7 +27,11 @@ const handleLogin = async () => {
       success.value = 'Akses Diterima. Membuka Dashboard...'
       
       setTimeout(() => {
-        navigateTo('/kepegawaian')
+        if (response.user.role === 'tendik') {
+          navigateTo('/kepegawaian/self-service')
+        } else {
+          navigateTo('/kepegawaian')
+        }
       }, 800)
     } else {
       error.value = response.message || 'Otentikasi Gagal. Mohon periksa kembali data Anda.'

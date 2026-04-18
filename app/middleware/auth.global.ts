@@ -1,6 +1,17 @@
 export default defineNuxtRouteMiddleware(async (to) => {
   const user = useUser()
   
+  // Role based access protection - Run this BEFORE early returns to ensure redirection on client-side navigation
+  if (user.value?.role === 'tendik') {
+    const isProtectedPath = to.path.startsWith('/kepegawaian/master') || 
+                          to.path === '/kepegawaian' || 
+                          to.path === '/kepegawaian/'
+    
+    if (isProtectedPath) {
+      return navigateTo('/kepegawaian/self-service/profile')
+    }
+  }
+
   // Skip if we already have user (client-side)
   if (import.meta.client && user.value) return
 

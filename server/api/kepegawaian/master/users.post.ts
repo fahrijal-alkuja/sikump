@@ -31,12 +31,20 @@ export default defineEventHandler(async (event) => {
     })
 
     // Assign group
-    const groupName = role === 'admin' ? 'admin' : 'prodi'
-    const group: any = await prisma.$queryRawUnsafe(`SELECT id FROM \`groups\` WHERE name = '${groupName}' LIMIT 1`)
+    let searchGroups = []
+    if (role === 'admin') searchGroups = ["'admin'"]
+    else if (role === 'prodi') searchGroups = ["'prodi'", "'unit'"]
+    else searchGroups = ["'tendik'", "'members'", "'user'", "'umper'"]
+
+    const groupResult: any[] = await prisma.$queryRawUnsafe(`
+      SELECT id FROM \`groups\` 
+      WHERE LOWER(name) IN (${searchGroups.join(',')}) 
+      ORDER BY FIELD(LOWER(name), ${searchGroups.join(',')}) 
+      LIMIT 1
+    `)
+    const groupId = groupResult.length > 0 ? groupResult[0].id : 2
     
-    if (group[0]) {
-      await prisma.$queryRawUnsafe(`INSERT INTO users_groups (user_id, group_id) VALUES (${newUser.id}, ${group[0].id})`)
-    }
+    await prisma.$queryRawUnsafe(`INSERT INTO users_groups (user_id, group_id) VALUES (${newUser.id}, ${groupId})`)
 
     // Log the activity
     await logActivity(event, 'CREATE_USER', username, `Membuat akun baru untuk ${first_name} ${last_name} (${role})`)

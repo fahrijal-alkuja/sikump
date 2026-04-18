@@ -1,11 +1,49 @@
 <script setup lang="ts">
-const { data: users, refresh } = await useFetch<any>('/api/kepegawaian/master/users')
+const route = useRoute()
+const roleFilter = computed(() => route.query.role as string)
+const searchQuery = ref('')
+
+const { data: users, refresh } = await useFetch<any>(() => {
+  let url = '/api/kepegawaian/master/users?'
+  if (roleFilter.value) url += `role=${roleFilter.value}&`
+  if (searchQuery.value) url += `search=${searchQuery.value}`
+  return url
+}, { watch: [roleFilter, searchQuery] })
+
 const { data: biros } = await useFetch<any>('/api/kepegawaian/biro')
 
 const showModal = ref(false)
 const showDeleteModal = ref(false)
 const isEditing = ref(false)
+const isSyncing = ref(false)
+const showSyncModal = ref(false)
+const notification = ref({ show: false, title: '', message: '', type: 'success' })
 const selectedUserId = ref<number | null>(null)
+
+const triggerNotify = (title: string, message: string, type: 'success' | 'error' = 'success') => {
+  notification.value = { show: true, title, message, type }
+  if (type === 'success') {
+    setTimeout(() => notification.value.show = false, 3000)
+  }
+}
+
+const handleSyncTendik = async () => {
+  showSyncModal.value = false
+  isSyncing.value = true
+  try {
+    const res = await $fetch<any>('/api/admin/migrate-tendik')
+    if (res.success) {
+      triggerNotify('Sinkronisasi Berhasil', res.message)
+      refresh()
+    } else {
+      triggerNotify('Sinkronisasi Gagal', res.message, 'error')
+    }
+  } catch (err: any) {
+    triggerNotify('Kesalahan Sistem', 'Tidak dapat menghubungi server', 'error')
+  } finally {
+    isSyncing.value = false
+  }
+}
 
 const form = ref({
   id: null,
@@ -50,11 +88,14 @@ const handleSave = async () => {
     })
     if (res.success) {
       showModal.value = false;
+      triggerNotify('Data Tersimpan', 'Perubahan pada akun berhasil diterapkan.')
       refresh();
     } else {
-      alert(res.message || 'Gagal menyimpan user')
+      triggerNotify('Gagal Menyimpan', res.message || 'Harap periksa kembali isian Anda.', 'error')
     }
-  } catch (e: any) { alert(e.message) }
+  } catch (e: any) { 
+    triggerNotify('Kesalahan Server', e.message, 'error')
+  }
 }
 
 const confirmDelete = (id: number) => {
@@ -75,15 +116,31 @@ const handleExecuteDelete = async () => {
 <template>
   <div class="user-admin-wrapper">
     <!-- Header Section -->
-    <div class="page-top-bar">
-      <div class="title-group">
-        <h1 class="page-main-title">Manajemen Otoritas</h1>
+    <div class="page-top-action-bar">
+      <div class="page-title-group">
+        <h1 class="page-main-title">{{ roleFilter ? 'Daftar User ' + (roleFilter === 'tendik' ? 'Tendik' : roleFilter.toUpperCase()) : 'Manajemen Otoritas' }}</h1>
         <p class="page-sub-desc">Sistem Pengaturan Hak Akses & Personel Administratif</p>
       </div>
-      <button @click="openAdd" class="btn-primary-action">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Registrasi Admin
-      </button>
+
+      <div class="action-controls-wrapper">
+        <button v-if="roleFilter === 'tendik'" @click="showSyncModal = true" class="btn-secondary-action mr-2" :disabled="isSyncing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+          {{ isSyncing ? 'Sinkronisasi...' : 'Sinkronisasi User Tendik' }}
+        </button>
+        <button @click="openAdd" class="btn-primary-action">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Registrasi Admin
+        </button>
+      </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="table-search-bar">
+      <div class="search-input-group wide">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input v-model="searchQuery" type="text" placeholder="Cari berdasarkan nama, nik atau email..." class="glass-search-input" />
+      </div>
+      <div class="search-hint">Menampilkan {{ users?.data?.length || 0 }} entitas terdaftar</div>
     </div>
 
     <!-- Stats Section -->
@@ -206,6 +263,7 @@ const handleExecuteDelete = async () => {
             <div class="input-set">
               <label>Role Akses</label>
               <select v-model="form.role" class="standard-select">
+                <option value="tendik">Tenaga Kependidikan</option>
                 <option value="prodi">Admin Unit / Prodi</option>
                 <option value="admin">Admin Universitas</option>
               </select>
@@ -245,22 +303,91 @@ const handleExecuteDelete = async () => {
         </div>
       </div>
     </div>
+
+    <!-- Sync Confirmation Modal -->
+    <div v-if="showSyncModal" class="full-modal-overlay">
+      <div class="alert-surface-box animate-modal">
+        <div class="alert-icon-ring sync-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        </div>
+        <div class="alert-text-group">
+          <h2 class="alert-main-title">Sinkronisasi User</h2>
+          <p class="alert-sub-desc">Apakah Anda ingin membuatkan akun otomatis untuk seluruh Tendik yang belum memiliki akses log? Password awal akan diset sesuai NIK.</p>
+        </div>
+        <div class="alert-action-vertical">
+          <button @click="handleSyncTendik" class="btn-confirm-execute">Ya, Sinkronisasi Sekarang</button>
+          <button @click="showSyncModal = false" class="btn-delete-cancel">Batalkan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Global Notification Notification -->
+    <Transition name="slide-fade">
+      <div v-if="notification.show" :class="['global-notification', notification.type]">
+        <div class="n-icon">
+          <svg v-if="notification.type === 'success'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        </div>
+        <div class="n-text">
+          <div class="n-title">{{ notification.title }}</div>
+          <div class="n-desc">{{ notification.message }}</div>
+        </div>
+        <button @click="notification.show = false" class="n-close">×</button>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <style scoped>
 .user-admin-wrapper { padding: 40px; min-height: 100vh; background: transparent; }
 
-/* Header Bar */
-.page-top-bar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
-.page-main-title { font-size: 32px; font-weight: 900; color: #1e293b; letter-spacing: -1.5px; margin: 0; line-height: 1; }
-.page-sub-desc { font-size: 14px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+/* Header Section */
+.page-top-action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; gap: 20px; flex-wrap: wrap; }
+.page-title-group { flex: 1; min-width: 300px; }
+.page-main-title { font-size: 34px; font-weight: 900; color: #1e293b; letter-spacing: -1.5px; margin: 0; }
+.page-sub-desc { font-size: 14px; color: #64748b; font-weight: 600; margin-top: 4px; }
+
+.action-controls-wrapper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
+.mr-2 { margin-right: 0.5rem; }
+
+/* Table Search Bar Section */
+.table-search-bar { 
+  display: flex; align-items: center; justify-content: space-between; 
+  background: white; padding: 20px 30px; border-radius: 24px; border: 1px solid #f1f5f9; 
+  margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+}
+.search-input-group.wide { width: 450px; }
+.search-hint { font-size: 12px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; }
+
+/* Expanded Search Input */
+.search-input-group { position: relative; }
+.search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #4f46e5; pointer-events: none; }
+.glass-search-input { 
+  width: 100%; padding: 14px 20px 14px 48px; background: #f8fafc; border: 2px solid #f1f5f9; border-radius: 20px; 
+  font-size: 14px; font-weight: 700; color: #1e293b; transition: all 0.3s; 
+}
+.glass-search-input:focus { outline: none; border-color: #4f46e5; background: white; box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.1); }
+.glass-search-input::placeholder { color: #cbd5e1; }
+
+.btn-primary-action, .btn-secondary-action { flex-shrink: 0; }
+
 .btn-primary-action { 
   background: #4f46e5; color: white; padding: 12px 24px; border-radius: 16px; border: none; font-weight: 800; font-size: 14px;
   display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 20px rgba(79,70,229,0.2);
 }
 .btn-primary-action svg { width: 18px; height: 18px; }
 .btn-primary-action:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(79,70,229,0.3); }
+
+.action-row { display: flex; align-items: center; }
+.mr-4 { margin-right: 1rem; }
+
+.btn-secondary-action {
+  background: white; color: #4f46e5; padding: 12px 24px; border-radius: 16px; border: 1.5px solid #eef2ff; font-weight: 800; font-size: 14px;
+  display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.3s;
+}
+.btn-secondary-action svg { width: 18px; height: 18px; }
+.btn-secondary-action:hover:not(:disabled) { background: #f8fafc; transform: translateY(-3px); border-color: #4f46e5; }
+.btn-secondary-action:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Stats Row */
 .stats-row { display: flex; gap: 16px; margin-bottom: 30px; }
@@ -362,11 +489,35 @@ input:checked + .ios-slider:before { transform: translateX(24px); }
 .alert-surface-box { width: 100%; max-width: 400px; background: white; border-radius: 40px; padding: 40px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.3); }
 .alert-icon-ring { width: 80px; height: 80px; border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
 .alert-icon-ring.delete-red { background: #fff1f2; color: #e11d48; }
+.alert-icon-ring.sync-blue { background: #eef2ff; color: #4f46e5; }
 .alert-icon-ring svg { width: 40px; height: 40px; }
 .alert-main-title { font-size: 28px; font-weight: 900; color: #1e293b; letter-spacing: -1.5px; margin: 0; }
 .alert-sub-desc { font-size: 14px; color: #94a3b8; font-weight: 600; margin-top: 10px; line-height: 1.5; }
 .alert-action-vertical { display: flex; flex-direction: column; gap: 12px; margin-top: 30px; }
 .btn-delete-execute { width: 100%; padding: 16px; background: #e11d48; color: white; border-radius: 18px; border: none; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(225,29,72,0.2); transition: 0.3s; }
 .btn-delete-execute:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(225,29,72,0.3); }
+.btn-confirm-execute { width: 100%; padding: 16px; background: #4f46e5; color: white; border-radius: 18px; border: none; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(79,70,229,0.2); transition: 0.3s; }
+.btn-confirm-execute:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(79,70,229,0.3); }
 .btn-delete-cancel { width: 100%; padding: 16px; background: #f8fafc; color: #94a3b8; border-radius: 18px; border: none; font-weight: 800; cursor: pointer; }
+
+/* Global Notification */
+.global-notification {
+  position: fixed; top: 2rem; right: 2rem; z-index: 3000;
+  min-width: 320px; max-width: 450px; padding: 16px 20px;
+  background: white; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  display: flex; align-items: center; gap: 16px;
+  border-left: 6px solid #4f46e5;
+}
+.global-notification.error { border-left-color: #ef4444; }
+.n-icon { width: 32px; height: 32px; flex-shrink: 0; color: #4f46e5; }
+.error .n-icon { color: #ef4444; }
+.n-text { flex: 1; }
+.n-title { font-weight: 900; color: #1e293b; font-size: 0.95rem; }
+.n-desc { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-top: 2px; }
+.n-close { background: none; border: none; font-size: 1.5rem; color: #cbd5e1; cursor: pointer; padding: 0 5px; }
+.n-close:hover { color: #1e293b; }
+
+.slide-fade-enter-active { transition: all 0.3s ease-out; }
+.slide-fade-leave-active { transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1); }
+.slide-fade-enter-from, .slide-fade-leave-to { transform: translateX(20px); opacity: 0; }
 </style>

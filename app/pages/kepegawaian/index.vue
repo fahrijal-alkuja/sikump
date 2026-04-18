@@ -29,6 +29,18 @@ const getPercent = (val: number, total: number) => {
   if (!total) return 0
   return Math.round((val / total) * 100)
 }
+
+const mapIkatanKerja = (label: string) => {
+  const map: any = {
+    'DTY': 'Dosen Tetap Yayasan',
+    'DPK': 'Dosen PNS DPK',
+    'DPK2': 'Dosen Perjanjian Kerja',
+    '1': 'Tetap',
+    '2': 'Kontrak',
+    '3': 'Luar Biasa'
+  }
+  return map[label] || label || 'Belum Diatur'
+}
 </script>
 
 <template>
@@ -103,16 +115,16 @@ const getPercent = (val: number, total: number) => {
         </div>
       </section>
 
-      <!-- ROW 2: DOSEN ANALYTICS -->
+      <!-- ROW 2: SDM ANALYTICS -->
       <header class="section-divider">
-        <h3>Analisis Strategis & Karir Dosen</h3>
+        <h3>Analisis Strategis & Sebaran SDM</h3>
         <span class="line"></span>
       </header>
       <section class="analysis-grid dosen">
         <!-- Academic Rank Distribution -->
         <div class="glass-card analytics-panel">
           <div class="p-header">
-            <h3>Sebaran Jabatan Akademik</h3>
+            <h3>Sebaran Jabatan Akademik (Dosen)</h3>
           </div>
           <div class="jafung-list">
             <div v-for="(val, key) in stats.dosen.jafung" :key="key" class="j-item">
@@ -125,6 +137,41 @@ const getPercent = (val: number, total: number) => {
           </div>
         </div>
 
+        <!-- Ikatan Kerja Dosen -->
+        <div class="glass-card analytics-panel">
+          <div class="p-header">
+            <h3>Sebaran Ikatan Kerja (Dosen)</h3>
+          </div>
+          <div class="jafung-list">
+            <div v-for="item in stats.dosen.ikatanKerja" :key="item.label" class="j-item">
+              <div class="j-text">
+                <span class="j-name">{{ mapIkatanKerja(item.label) }}</span>
+                <span class="j-count">{{ item.count }} Orang</span>
+              </div>
+              <div class="j-bar-bg"><div class="j-bar-fill blue" :style="{ width: getPercent(Number(item.count), stats.dosen.total) + '%' }"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ikatan Kerja Tendik -->
+        <div class="glass-card analytics-panel">
+          <div class="p-header">
+            <h3>Sebaran Ikatan Kerja (Tendik)</h3>
+          </div>
+          <div class="jafung-list">
+            <div v-for="item in stats.tendik.ikatanKerja" :key="item.label" class="j-item">
+              <div class="j-text">
+                <span class="j-name">{{ mapIkatanKerja(item.label) }}</span>
+                <span class="j-count">{{ item.count }} Orang</span>
+              </div>
+              <div class="j-bar-bg"><div class="j-bar-fill green" :style="{ width: getPercent(Number(item.count), stats.tendik.total) + '%' }"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ROW 3: ALERTS & COMPETENCY -->
+      <section class="analysis-grid dosen">
         <!-- Smart Alerts List (Dosen) -->
         <div class="glass-card alerts-panel">
           <div class="p-header">
@@ -148,6 +195,22 @@ const getPercent = (val: number, total: number) => {
           </div>
           <div class="alert-scroll">
             <div v-for="d in stats.dosen.trainedList" :key="d.nik" class="alert-card">
+              <div class="a-info">
+                <span class="a-name">{{ d.nama }}</span>
+                <span class="a-meta">{{ d.unit || 'Fakultas' }} | NIK: {{ d.nik }}</span>
+              </div>
+              <NuxtLink :to="'/kepegawaian/' + d.nik" class="a-link">Detail ↗</NuxtLink>
+            </div>
+          </div>
+        </div>
+
+        <!-- Training Tendik -->
+        <div class="glass-card table-panel">
+          <div class="p-header">
+            <h3>Pengembangan Kompetensi Tendik</h3>
+          </div>
+          <div class="alert-scroll">
+            <div v-for="d in stats.tendik.trainedList" :key="d.nik" class="alert-card">
               <div class="a-info">
                 <span class="a-name">{{ d.nama }}</span>
                 <span class="a-meta">{{ d.unit || 'Fakultas' }} | NIK: {{ d.nik }}</span>
@@ -404,6 +467,9 @@ const getPercent = (val: number, total: number) => {
         <NuxtLink to="/kepegawaian/laporan" class="glass-card action-item">
           <span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></span> <h3>Export Laporan</h3>
         </NuxtLink>
+        <NuxtLink to="/kepegawaian/survei/analisis" class="glass-card action-item">
+          <span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span> <h3>Analisis Survei</h3>
+        </NuxtLink>
       </section>
     </div>
   </div>
@@ -505,6 +571,8 @@ const getPercent = (val: number, total: number) => {
 .j-count { font-size: 0.9rem; font-weight: 800; }
 .j-bar-bg { height: 6px; background: rgba(255,255,255,0.03); border-radius: 3px; }
 .j-bar-fill { height: 100%; background: var(--primary); border-radius: 3px; box-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
+.j-bar-fill.blue { background: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+.j-bar-fill.green { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
 
 .alert-scroll { display: flex; flex-direction: column; gap: 1rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem; }
 .alert-card { 

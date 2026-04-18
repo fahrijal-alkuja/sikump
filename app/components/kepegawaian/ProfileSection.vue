@@ -67,8 +67,9 @@ const handleUpdate = async () => {
     const formData = new FormData()
     // Append all form fields
     Object.keys(form.value).forEach(key => {
-      const val = (form.value as any)[key]
-      if (val !== null && val !== undefined) {
+      let val = (form.value as any)[key]
+      if (val === null) val = ''
+      if (val !== undefined) {
         formData.append(key, val)
       }
     })
@@ -125,30 +126,20 @@ const handleUpdate = async () => {
         :file-url="preview.url" 
         @close="preview.show = false" 
       />
-      <div class="info-item">
-        <label>NIK</label>
-        <span>{{ employee.nik }}</span>
-      </div>
-      <div class="info-item" v-if="employee.nidn">
-        <label>NIDN</label>
-        <span>{{ employee.nidn }}</span>
-      </div>
-      <div class="info-item" v-if="employee.nuptk">
-        <label>NUPTK</label>
-        <span>{{ employee.nuptk }}</span>
-      </div>
-      <div class="info-item">
-        <label>
-          No. KTP
-          <button v-if="employee.upload_ktp" @click="openPreview(`/assets/KTP/${employee.upload_ktp}`, 'Dokumen KTP')" class="btn-view-ktp">
-            (Lihat Dokumen)
-          </button>
-        </label>
-        <span>{{ employee.nomor_ktp || '-' }}</span>
-      </div>
-      <div class="info-item">
-        <label>Nama Lengkap</label>
-        <span>{{ employee.nama }}</span>
+      <div class="identity-header">
+        <div class="info-item">
+          <label>
+            No. KTP
+            <button v-if="employee.upload_ktp" @click="openPreview(`/assets/KTP/${employee.upload_ktp}`, 'Dokumen KTP')" class="btn-view-ktp">
+              (Lihat Dokumen)
+            </button>
+          </label>
+          <span>{{ employee.nomor_ktp || '-' }}</span>
+        </div>
+        <div class="info-item">
+          <label>Nama Lengkap</label>
+          <span>{{ employee.nama }}</span>
+        </div>
       </div>
       <div class="info-item">
         <label>Jenis Kelamin</label>
@@ -167,7 +158,20 @@ const handleUpdate = async () => {
         <span>{{ employee.nama_ibu_kandung || '-' }}</span>
       </div>
       <div class="info-item">
-        <label>Status Ikatan Kerja</label>
+        <label>Ikatan Kerja</label>
+        <span>
+          {{ 
+            employee.ikatan_kerja === 'DTY' ? 'Dosen Tetap Yayasan' :
+            employee.ikatan_kerja === 'DPK' ? 'Dosen PNS DPK' :
+            employee.ikatan_kerja === 'DPK2' ? 'Dosen dengan Perjanjian Kerja' :
+            employee.ikatan_kerja === '1' ? 'Tetap (Tendik)' :
+            employee.ikatan_kerja === '2' ? 'Kontrak (Tendik)' :
+            employee.ikatan_kerja === '3' ? 'Pegawai Luar Biasa' : '-'
+          }}
+        </span>
+      </div>
+      <div class="info-item">
+        <label>Status Keaktifan</label>
         <span :class="['status-pill', `status-${employee.status_aktif}`]">
           {{ employee.status_aktif === '1' ? 'Aktif' : 
              employee.status_aktif === '2' ? 'Tugas Belajar' : 
@@ -257,7 +261,19 @@ const handleUpdate = async () => {
           <input v-model="form.nama_ibu_kandung" type="text" class="glass-input" placeholder="Wajib untuk PDDikti" />
         </div>
         <div class="form-group">
-          <label>Status Ikatan Kerja</label>
+          <label>Ikatan Kerja</label>
+          <select v-model="form.ikatan_kerja" class="glass-input">
+            <option value="">Pilih Ikatan Kerja</option>
+            <option value="DTY">Dosen Tetap Yayasan</option>
+            <option value="DPK">Dosen PNS DPK</option>
+            <option value="DPK2">Dosen dengan Perjanjian Kerja</option>
+            <option value="1">Tetap (Tendik)</option>
+            <option value="2">Kontrak (Tendik)</option>
+            <option value="3">Pegawai Luar Biasa</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status Keaktifan</label>
           <select v-model="form.status_aktif" class="glass-input">
             <option value="1">Aktif</option>
             <option value="2">Tugas Belajar</option>

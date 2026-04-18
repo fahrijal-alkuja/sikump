@@ -34,13 +34,21 @@ export default defineEventHandler(async (event) => {
 
     // Update role if changed
     if (role) {
-      const groupName = role === 'admin' ? 'admin' : 'prodi'
-      const group: any = await prisma.$queryRawUnsafe(`SELECT id FROM \`groups\` WHERE name = '${groupName}' LIMIT 1`)
+      let searchGroups = []
+      if (role === 'admin') searchGroups = ["'admin'"]
+      else if (role === 'prodi') searchGroups = ["'prodi'", "'unit'"]
+      else searchGroups = ["'tendik'", "'members'", "'user'", "'umper'"]
+
+      const groupResult: any[] = await prisma.$queryRawUnsafe(`
+        SELECT id FROM \`groups\` 
+        WHERE LOWER(name) IN (${searchGroups.join(',')}) 
+        ORDER BY FIELD(LOWER(name), ${searchGroups.join(',')}) 
+        LIMIT 1
+      `)
       
-      if (group[0]) {
-        // Delete old role and add new
+      if (groupResult[0]) {
         await prisma.$queryRawUnsafe(`DELETE FROM users_groups WHERE user_id = ${id}`)
-        await prisma.$queryRawUnsafe(`INSERT INTO users_groups (user_id, group_id) VALUES (${id}, ${group[0].id})`)
+        await prisma.$queryRawUnsafe(`INSERT INTO users_groups (user_id, group_id) VALUES (${id}, ${groupResult[0].id})`)
       }
     }
 

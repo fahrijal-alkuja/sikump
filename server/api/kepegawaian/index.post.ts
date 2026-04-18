@@ -67,8 +67,35 @@ export default defineEventHandler(async (event) => {
         `
       }
       
+      // AUTOMATE USER CREATION FOR TENDIK
+      try {
+        const bcrypt = await import('bcryptjs')
+        const hashedPassword = bcrypt.hashSync(nik, 10)
+        
+        // 1. Create User
+        await prisma.$executeRaw`
+          INSERT INTO users (ip_address, username, password, email, first_name, last_name, company, active, created_on)
+          VALUES ('127.0.0.1', ${nik}, ${hashedPassword}, ${nik + '@unikarta.ac.id'}, ${nama}, '', ${nik}, 1, UNIX_TIMESTAMP())
+        `
+        
+        // 2. Assign to Tendik Group (Group 3 is usually tendik, but let's find it or use 2 for members)
+        const groups: any[] = await prisma.$queryRaw`SELECT id FROM \`groups\` WHERE name = 'tendik' LIMIT 1`
+        const groupId = groups.length > 0 ? groups[0].id : 2 // Default to 2 if 'tendik' group not found
+
+        const userRows: any[] = await prisma.$queryRaw`SELECT id FROM users WHERE username = ${nik} LIMIT 1`
+        if (userRows.length > 0) {
+          await prisma.$executeRaw`
+            INSERT INTO users_groups (user_id, group_id)
+            VALUES (${userRows[0].id}, ${groupId})
+          `
+        }
+      } catch (userErr) {
+        console.error('Auto-user creation failed:', userErr)
+        // We don't throw error here to not block the main process
+      }
+      
       await logActivity(event, 'CREATE_KARYAWAN', nik, `Menambah data Karyawan baru: ${nama}`)
-      return { success: true, message: 'Karyawan berhasil ditambahkan' }
+      return { success: true, message: 'Karyawan berhasil ditambahkan & User Akses Tersedia' }
     }
   } catch (error: any) {
     console.error('Create error:', error)

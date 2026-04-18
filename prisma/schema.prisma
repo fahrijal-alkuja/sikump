@@ -369,3 +369,37 @@ model user_sub_menu {
   icon     String? @db.VarChar(102)
   is_activ Int?
 }
+
+model survei_tendik {
+  id                 Int      @id @default(autoincrement())
+  nik                String?  @db.VarChar(20)
+  nama               String?  @db.VarChar(100)
+  unit_kerja         String?  @db.VarChar(100)
+  jabatan            String?  @db.VarChar(100)
+  status_kepegawaian String?  @db.VarChar(50)
+  masa_kerja         String?  @db.VarChar(50)
+  tahun              String   @db.VarChar(4)
+  semester           String?  @db.Char(1)
+  a1                 Int?     @db.TinyInt
+  a2                 Int?     @db.TinyInt
+  a3                 Int?     @db.TinyInt
+  a4                 Int?     @db.TinyInt
+  b1                 Int?     @db.TinyInt
+  b2                 Int?     @db.TinyInt
+  b3                 Int?     @db.TinyInt
+  c1                 Int?     @db.TinyInt
+  c2                 Int?     @db.TinyInt
+  d1                 Int?     @db.TinyInt
+  d2                 Int?     @db.TinyInt
+  d3                 Int?     @db.TinyInt
+  d4                 Int?     @db.TinyInt
+  e1                 Int?     @db.TinyInt
+  e2                 Int?     @db.TinyInt
+  e3                 Int?     @db.TinyInt
+  e4                 Int?     @db.TinyInt
+  pimpinan_atasan    String?  @db.VarChar(100)
+  aspek_memuaskan    String?  @db.Text
+  aspek_ditingkatkan String?  @db.Text
+  saran_perbaikan    String?  @db.Text
+  created_at         DateTime @default(now()) @db.Timestamp(0)
+}

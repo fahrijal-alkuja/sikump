@@ -29,7 +29,7 @@ const handleLogout = async () => {
             </div>
             <div class="brand-text">SIKUMP<span>.unikarta</span></div>
           </div>
-          <nav class="main-nav">
+          <nav class="main-nav" v-if="user?.role !== 'tendik'">
             <NuxtLink to="/kepegawaian" class="nav-link" exact-active-class="active">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
               Dashboard
@@ -74,7 +74,12 @@ const handleLogout = async () => {
                   Jabatan Struktural
                 </NuxtLink>
                 <div class="dropdown-divider"></div>
-                <NuxtLink to="/kepegawaian/logs" class="drop-link text-red-500">
+                <NuxtLink to="/kepegawaian/survei/tendik" class="drop-link text-amber-600">
+                  <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                  Survei Kepuasan Tendik
+                </NuxtLink>
+                <div class="dropdown-divider"></div>
+                <NuxtLink v-if="user?.role !== 'tendik'" to="/kepegawaian/logs" class="drop-link text-red-500">
                   <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
                   Log Aktivitas
                 </NuxtLink>
@@ -82,11 +87,35 @@ const handleLogout = async () => {
                   <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                   Analisis Presensi
                 </NuxtLink>
-                <div class="dropdown-divider"></div>
-                <NuxtLink to="/kepegawaian/master/users" class="drop-link text-indigo-600">
-                  <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                  Manajemen User
-                </NuxtLink>
+                
+                <template v-if="user?.role !== 'tendik'">
+                  <div class="dropdown-divider"></div>
+                  <div class="dropdown-label">MANAJEMEN OTORITAS</div>
+                  <NuxtLink to="/kepegawaian/master/users?role=tendik" class="drop-link text-indigo-600">
+                    <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                    User Tendik
+                  </NuxtLink>
+                  <NuxtLink to="/kepegawaian/master/users?role=prodi" class="drop-link text-teal-600">
+                    <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M20 8v6M23 11h-6"></path></svg>
+                    Admin Unit / Prodi
+                  </NuxtLink>
+                  <NuxtLink to="/kepegawaian/master/users?role=admin" class="drop-link text-amber-600">
+                    <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    Admin Universitas
+                  </NuxtLink>
+                  <NuxtLink to="/kepegawaian/master/users" class="drop-link text-slate-500">
+                    <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1-2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Master Seluruh User
+                  </NuxtLink>
+                </template>
+
+                <template v-else>
+                  <div class="dropdown-divider"></div>
+                  <NuxtLink to="/kepegawaian/self-service/profile" class="drop-link text-indigo-600">
+                    <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    Profil Saya
+                  </NuxtLink>
+                </template>
               </div>
             </div>
           </nav>
@@ -96,7 +125,9 @@ const handleLogout = async () => {
           <div class="user-profile">
             <div class="user-info text-right">
               <span class="user-name">{{ user.name }}</span>
-              <span class="user-role">{{ user.role === 'admin' ? 'Administrator' : 'Admin Prodi' }}</span>
+              <span class="user-role">
+                {{ user.role === 'admin' ? 'Administrator' : (user.role === 'tendik' ? 'Tenaga Kependidikan' : 'Admin Unit / Prodi') }}
+              </span>
             </div>
             <div class="user-avatar">{{ user.name?.charAt(0) }}</div>
             <button @click="handleLogout" class="btn-logout" title="Log Keluar">
@@ -112,6 +143,9 @@ const handleLogout = async () => {
         <slot />
       </div>
     </main>
+
+    <!-- Mandatory Survey Check -->
+    <KepegawaianMandatorySurveyModal v-if="user" />
   </div>
 </template>
 
@@ -386,4 +420,9 @@ const handleLogout = async () => {
 .text-right {
   text-align: right;
 }
+
+/* Master Menu Overrides */
+.dropdown-label { font-size: 10px; font-weight: 950; color: #94a3b8; padding: 10px 15px 5px; text-transform: uppercase; letter-spacing: 1px; }
+.drop-link { border-radius: 12px !important; margin: 2px 0; }
+.drop-link:hover { transform: translateX(5px); background: #f8fafc !important; }
 </style>
