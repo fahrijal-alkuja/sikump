@@ -80,13 +80,19 @@ const getJafungName = (code: string | number) => {
                 </NuxtLink>
                 <h2>{{ employeeData.data.nama }}</h2>
                 <div class="identity-badges">
-                  <!-- NUPTK only for Dosen -->
-                  <template v-if="employeeData.data.ikatan_kerja === '1'">
-                    <div class="badge-item">
-                      <span class="lbl">NUPTK</span>
-                      <span class="val">{{ employeeData.data.nuptk || '-' }}</span>
+                  <!-- Dosen specific identifiers -->
+                  <template v-if="employeeData.data.type === 'dosen'">
+                    <div class="badge-item" v-if="employeeData.data.nidn">
+                      <span class="lbl">NIDN</span>
+                      <span class="val">{{ employeeData.data.nidn }}</span>
                     </div>
-                    <div class="badge-divider"></div>
+                    <div class="badge-divider" v-if="employeeData.data.nidn"></div>
+                    
+                    <div class="badge-item" v-if="employeeData.data.nuptk">
+                      <span class="lbl">NUPTK</span>
+                      <span class="val">{{ employeeData.data.nuptk }}</span>
+                    </div>
+                    <div class="badge-divider" v-if="employeeData.data.nuptk"></div>
                   </template>
                   
                   <div class="badge-item">
@@ -94,13 +100,15 @@ const getJafungName = (code: string | number) => {
                     <span class="val">{{ employeeData.data.nik }}</span>
                   </div>
                   <div class="badge-divider"></div>
+
                   <div class="badge-item">
-                    <span class="lbl">{{ (employeeData.data.type === 'dosen' || employeeData.data.ikatan_kerja === '1') ? 'HOMEBASE' : 'UNIT KERJA / BIRO' }}</span>
-                    <span class="val">{{ employeeData.data.homebase || '-' }}</span>
+                    <span class="lbl">{{ employeeData.data.type === 'dosen' ? 'HOMEBASE' : 'PENEMPATAN' }}</span>
+                    <span class="val">{{ employeeData.data.homebase || employeeData.data.unit || '-' }}</span>
                   </div>
+                  
                   <div class="badge-divider" v-if="employeeData.data.is_struktural"></div>
                   <div class="badge-item" v-if="employeeData.data.is_struktural">
-                    <span class="lbl">PENUGASAN STRUKTURAL</span>
+                    <span class="lbl">INTERNAL / STRUKTURAL</span>
                     <span class="val">{{ employeeData.data.unit }}</span>
                   </div>
                 </div>
