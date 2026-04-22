@@ -136,9 +136,9 @@ const handleUpdate = async () => {
           </label>
           <span>{{ employee.nomor_ktp || '-' }}</span>
         </div>
-        <div class="info-item">
+        <div class="info-item mt-4">
           <label>Nama Lengkap</label>
-          <span>{{ employee.nama }}</span>
+          <span class="name-text">{{ employee.nama }}</span>
         </div>
       </div>
       <div class="info-item">
@@ -482,4 +482,6 @@ const handleUpdate = async () => {
   color: #1e293b;
   text-decoration: underline;
 }
+.mt-4 { margin-top: 1.5rem; }
+.name-text { font-size: 1.5rem !important; color: var(--primary) !important; display: block; margin-top: 0.25rem; }
 </style>
