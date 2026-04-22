@@ -17,6 +17,14 @@ export default defineEventHandler(async (event) => {
   const data: any = {}
 
   if (parts) {
+    // 1. First Pass: Get all fields
+    for (const part of parts) {
+      if (part.name && !part.filename) {
+        data[part.name] = part.data.toString()
+      }
+    }
+
+    // 2. Second Pass: Process Files
     for (const part of parts) {
       if (part.name && part.filename) {
         // Handle File Update
@@ -28,7 +36,13 @@ export default defineEventHandler(async (event) => {
         if (table.includes('pendidikan')) folder = 'pendidikan'
         else if (table.includes('pelatihan')) folder = 'sertifikat'
         else if (table.includes('keluarga')) folder = 'kk'
-        else if (table.includes('pengangkatan') || table.includes('jabatan') || table.includes('jafung')) folder = 'SK'
+        else if (table.includes('pangkat')) folder = 'pangkat'
+        else if (table.includes('pengangkatan') || table.includes('jafung')) folder = 'SK'
+        else if (table.includes('jabatan')) {
+          // Use status if present in data, otherwise fallback to existing status logic if needed
+          // But usually the status is sent together with the file in these forms
+          folder = data.status === '2' ? 'skMutasi' : 'SK'
+        }
         else if (table.includes('pajak')) folder = 'npwp'
         else if (table.includes('askes')) folder = 'askes'
 
@@ -37,8 +51,6 @@ export default defineEventHandler(async (event) => {
         
         fs.writeFileSync(path.join(uploadDir, newFilename), part.data)
         data[part.name] = newFilename
-      } else if (part.name) {
-        data[part.name] = part.data.toString()
       }
     }
   } else {

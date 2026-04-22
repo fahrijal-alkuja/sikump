@@ -44,7 +44,7 @@ model riwayat_jabatan {
   tanggal_sk     DateTime?      @db.Date
   ikatan_kerja   String?        @db.VarChar(100)
   tanggal_keluar DateTime?      @db.Date
-  upload_sk      String?        @db.VarChar(100)
+  upload_sk      String?        @db.VarChar(255)
   is_aktiv       String?        @db.Char(2)
   status         String?        @db.Char(4)
   karyawan       tmst_karyawan? @relation(fields: [nik], references: [nik])
@@ -60,7 +60,7 @@ model riwayat_pelatihan {
   tahun         String?        @db.VarChar(100)
   tempat        String?        @db.VarChar(100)
   tanggal_mulai DateTime?      @db.Date
-  upload        String?        @db.VarChar(100)
+  upload        String?        @db.VarChar(255)
   karyawan      tmst_karyawan? @relation(fields: [nik], references: [nik])
 
   @@index([nik])
@@ -72,7 +72,7 @@ model riwayat_pendidikan {
   id_pendidikan   Int?
   asal_pendidikan String?        @db.VarChar(100)
   tahun_lulus     String?        @db.VarChar(100)
-  upload_ijazah   String?        @db.VarChar(100)
+  upload_ijazah   String?        @db.VarChar(255)
   last_upload     DateTime?      @updatedAt @db.Timestamp(0)
   karyawan        tmst_karyawan? @relation(fields: [nik], references: [nik])
 
@@ -86,7 +86,7 @@ model riwayat_keluarga {
   id_anak           String?        @db.VarChar(100)
   nama_ismi         String?        @db.VarChar(100)
   pekerjaan_ismi    String?        @db.VarChar(100)
-  upload_kk         String?        @db.VarChar(100)
+  upload_kk         String?        @db.VarChar(255)
   last_upload       DateTime?      @updatedAt @db.Timestamp(0)
   karyawan          tmst_karyawan? @relation(fields: [nik], references: [nik])
 
@@ -103,7 +103,7 @@ model riwayat_pengangkatan {
   nomor_sk           String?        @db.VarChar(100)
   lembaga_pengangkat String?        @db.VarChar(100)
   sumber_gaji        String?        @db.VarChar(100)
-  upload_sk          String?        @db.VarChar(100)
+  upload_sk          String?        @db.VarChar(255)
   last_upload        DateTime?      @updatedAt @db.Timestamp(0)
   karyawan           tmst_karyawan? @relation(fields: [nik], references: [nik])
 
@@ -125,7 +125,7 @@ model tmst_askes {
   nik          String?        @db.VarChar(100)
   no_askes     String?        @db.VarChar(100)
   nama_askes   String?        @db.VarChar(100)
-  upload_askes String?        @db.VarChar(100)
+  upload_askes String?        @db.VarChar(255)
   karyawan     tmst_karyawan? @relation(fields: [nik], references: [nik])
 
   @@index([nik])
@@ -258,7 +258,7 @@ model riwayat_mutasi {
   tempat_lama      String? @db.VarChar(100)
   tempat_baru      String? @db.VarChar(100)
   tanggal_mutasi   String? @db.VarChar(100)
-  upload_sk_mutasi String? @db.VarChar(100)
+  upload_sk_mutasi String? @db.VarChar(255)
 
   @@index([nik])
 }
@@ -269,7 +269,7 @@ model riwayat_pendidikan_dosen {
   id_pendidikan   String?   @db.VarChar(100)
   asal_pendidikan String?   @db.VarChar(100)
   tahun_lulus     String?   @db.VarChar(100)
-  upload_ijazah   String?   @db.VarChar(100)
+  upload_ijazah   String?   @db.VarChar(255)
   last_upload     DateTime? @db.Timestamp(0)
 
   @@index([nik])

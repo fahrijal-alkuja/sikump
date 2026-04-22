@@ -39,20 +39,32 @@ export default defineEventHandler(async (event) => {
 
   // Handle Multipart (with Files)
   const data: any = {}
-  const files: any[] = []
 
+  // 1. First Pass: Get all fields to decide folder if needed
+  for (const part of parts) {
+    if (part.name && !part.filename) {
+      data[part.name] = part.data.toString()
+    }
+  }
+
+  // 2. Second Pass: Process Files
   for (const part of parts) {
     if (part.name && part.filename) {
       // It's a file
       const ext = path.extname(part.filename)
       const newFilename = `${table}_${Date.now()}${ext}`
       
-      // Determine folder based on table
+      // Determine folder based on table & status
       let folder = 'uploads'
       if (table.includes('pendidikan')) folder = 'pendidikan'
       else if (table.includes('pelatihan')) folder = 'sertifikat'
       else if (table.includes('keluarga')) folder = 'kk'
-      else if (table.includes('pengangkatan') || table.includes('jabatan') || table.includes('jafung')) folder = 'SK'
+      else if (table.includes('pangkat')) folder = 'pangkat'
+      else if (table.includes('pengangkatan') || table.includes('jafung')) folder = 'SK'
+      else if (table.includes('jabatan')) {
+        // Status 2 is Mutasi, otherwise SKU (Promosi etc)
+        folder = data.status === '2' ? 'skMutasi' : 'SK'
+      }
       else if (table.includes('pajak')) folder = 'npwp'
       else if (table.includes('askes')) folder = 'askes'
 
@@ -61,9 +73,6 @@ export default defineEventHandler(async (event) => {
       
       fs.writeFileSync(path.join(uploadDir, newFilename), part.data)
       data[part.name] = newFilename
-    } else if (part.name) {
-      // It's a field
-      data[part.name] = part.data.toString()
     }
   }
 
