@@ -243,9 +243,15 @@ const handleExecuteDelete = async () => {
             </div>
           </div>
           
-          <div class="input-set">
-            <label>Identitas Login (Username/NIK)</label>
-            <input v-model="form.username" :disabled="isEditing" class="standard-input" placeholder="Masukkan username" />
+          <div class="form-double-col">
+            <div class="input-set">
+              <label>Identitas Login (Username/NIK)</label>
+              <input v-model="form.username" :disabled="isEditing" class="standard-input" placeholder="Masukkan username" />
+            </div>
+            <div class="input-set">
+              <label>Alamat Email</label>
+              <input v-model="form.email" type="email" class="standard-input" placeholder="contoh@email.com" />
+            </div>
           </div>
           
           <div class="input-set">
