@@ -17,6 +17,9 @@ export default defineEventHandler(async (event) => {
     // Hash password (legacy format support)
     const hashedPassword = bcrypt.hashSync(password, 10)
 
+    // Get request IP for logging
+    const getRequestIP = (e: any) => e.node.req.socket.remoteAddress || '127.0.0.1'
+
     // Create user
     const newUser: any = await (prisma as any).user.create({
       data: {
@@ -26,7 +29,9 @@ export default defineEventHandler(async (event) => {
         first_name: first_name || '',
         last_name: last_name || '',
         company: String(company || ''),
-        active: 1
+        active: 1,
+        ip_address: getRequestIP(event),
+        created_on: Math.floor(Date.now() / 1000)
       }
     })
 
