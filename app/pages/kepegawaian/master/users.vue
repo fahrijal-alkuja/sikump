@@ -11,6 +11,7 @@ const { data: users, refresh } = await useFetch<any>(() => {
 }, { watch: [roleFilter, searchQuery] })
 
 const { data: biros } = await useFetch<any>('/api/kepegawaian/biro')
+const { data: prodis } = await useFetch<any>('/api/kepegawaian/prodi')
 
 const showModal = ref(false)
 const showDeleteModal = ref(false)
@@ -254,10 +255,15 @@ const handleExecuteDelete = async () => {
           
           <div class="form-double-col">
             <div class="input-set">
-              <label>Unit Kerja</label>
+              <label>Unit Kerja / Prodi</label>
               <select v-model="form.company" class="standard-select">
                 <option value="">-- Universitas (Central) --</option>
-                <option v-for="b in biros?.data" :key="b.id" :value="b.id">{{ b.nama }}</option>
+                <optgroup label="Biro / Unit Administratif">
+                  <option v-for="b in biros?.data" :key="b.id" :value="b.id">{{ b.nama }}</option>
+                </optgroup>
+                <optgroup label="Program Studi / Fakultas">
+                  <option v-for="p in prodis?.data" :key="p.id" :value="p.id">{{ p.nama }}</option>
+                </optgroup>
               </select>
             </div>
             <div class="input-set">
