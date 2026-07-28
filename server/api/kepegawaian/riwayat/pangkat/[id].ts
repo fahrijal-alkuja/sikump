@@ -1,5 +1,8 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { defineEventHandler, readMultipartFormData, createError } from 'h3'
+import { prisma } from '../../../../utils/prisma'
+import { getStoragePath } from '../../../../utils/storage'
+import fs from 'node:fs'
+import path from 'node:path'
 
 export default defineEventHandler(async (event) => {
   const id = parseInt(event.context.params?.id || '0')
@@ -8,8 +11,8 @@ export default defineEventHandler(async (event) => {
     try {
       await prisma.tmst_pangkat.delete({ where: { id } })
       return { success: true, message: 'Data pangkat dihapus' }
-    } catch (e) {
-      return { success: false, message: 'Gagal menghapus data' }
+    } catch (e: any) {
+      return { success: false, message: e?.message || 'Gagal menghapus data' }
     }
   }
 
@@ -28,8 +31,10 @@ export default defineEventHandler(async (event) => {
 
     try {
       if (file) {
-        const filename = `${Date.now()}-${file.filename}`
-        await require('fs/promises').writeFile(`./public/assets/pangkat/${filename}`, file.data)
+        const ext = path.extname(file.filename)
+        const filename = `pangkat_${Date.now()}${ext}`
+        const uploadDir = getStoragePath('pangkat')
+        fs.writeFileSync(path.join(uploadDir, filename), file.data)
         data.upload_sk = filename
       }
 
@@ -44,8 +49,9 @@ export default defineEventHandler(async (event) => {
         }
       })
       return { success: true, data: res }
-    } catch (e) {
-      return { success: false, message: 'Gagal memperbarui data pangkat' }
+    } catch (e: any) {
+      console.error('Error updating pangkat:', e)
+      return { success: false, message: e?.message || 'Gagal memperbarui data pangkat' }
     }
   }
 })

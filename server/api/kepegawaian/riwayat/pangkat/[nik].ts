@@ -1,5 +1,8 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { defineEventHandler, readMultipartFormData, createError } from 'h3'
+import { prisma } from '../../../../utils/prisma'
+import { getStoragePath } from '../../../../utils/storage'
+import fs from 'node:fs'
+import path from 'node:path'
 
 export default defineEventHandler(async (event) => {
   const nik = event.context.params?.nik
@@ -11,8 +14,8 @@ export default defineEventHandler(async (event) => {
         orderBy: { tmt: 'desc' }
       })
       return { success: true, data }
-    } catch (e) {
-      return { success: false, message: 'Gagal mengambil data pangkat' }
+    } catch (e: any) {
+      return { success: false, message: e?.message || 'Gagal mengambil data pangkat' }
     }
   }
 
@@ -31,8 +34,10 @@ export default defineEventHandler(async (event) => {
 
     try {
       if (file) {
-        const filename = `${Date.now()}-${file.filename}`
-        await require('fs/promises').writeFile(`./public/assets/pangkat/${filename}`, file.data)
+        const ext = path.extname(file.filename)
+        const filename = `pangkat_${Date.now()}${ext}`
+        const uploadDir = getStoragePath('pangkat')
+        fs.writeFileSync(path.join(uploadDir, filename), file.data)
         data.upload_sk = filename
       }
 
@@ -42,13 +47,14 @@ export default defineEventHandler(async (event) => {
           pangkat: data.pangkat,
           no_sk: data.no_sk,
           tmt: data.tmt,
-          upload_sk: data.upload_sk,
+          upload_sk: data.upload_sk || null,
           last_update: new Date()
         }
       })
       return { success: true, data: res }
-    } catch (e) {
-      return { success: false, message: 'Gagal menambah data pangkat' }
+    } catch (e: any) {
+      console.error('Error adding pangkat:', e)
+      return { success: false, message: e?.message || 'Gagal menambah data pangkat' }
     }
   }
 })

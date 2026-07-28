@@ -58,9 +58,14 @@ const handleSubmit = async () => {
       showAlert(`Riwayat Pangkat berhasil ${editingId.value ? 'diperbarui' : 'ditambahkan'}`, 'success')
       resetForm()
       emit('refresh')
+    } else {
+      showAlert(res.message || 'Gagal memproses data', 'error')
     }
-  } catch (e) { showAlert('Gagal memproses data', 'error') }
-  finally { loading.value = false }
+  } catch (e: any) { 
+    showAlert(e?.data?.message || e?.message || 'Gagal memproses data', 'error') 
+  } finally { 
+    loading.value = false 
+  }
 }
 
 const handleDelete = (id: number) => {
@@ -73,8 +78,12 @@ const handleDelete = (id: number) => {
         if (res.success) {
           showAlert('Data berhasil dihapus', 'info')
           emit('refresh')
+        } else {
+          showAlert(res.message || 'Gagal menghapus data', 'error')
         }
-      } catch (e) { showAlert('Gagal menghapus data', 'error') }
+      } catch (e: any) { 
+        showAlert(e?.data?.message || e?.message || 'Gagal menghapus data', 'error') 
+      }
     }
   )
 }
