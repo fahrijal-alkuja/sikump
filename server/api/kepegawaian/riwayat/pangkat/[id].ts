@@ -1,4 +1,4 @@
-import { defineEventHandler, readMultipartFormData, createError } from 'h3'
+import { defineEventHandler, readMultipartFormData, getMethod } from 'h3'
 import { prisma } from '../../../../utils/prisma'
 import { getStoragePath } from '../../../../utils/storage'
 import fs from 'node:fs'
@@ -6,8 +6,9 @@ import path from 'node:path'
 
 export default defineEventHandler(async (event) => {
   const id = parseInt(event.context.params?.id || '0')
+  const method = getMethod(event)
 
-  if (event.method === 'DELETE') {
+  if (method === 'DELETE') {
     try {
       await prisma.tmst_pangkat.delete({ where: { id } })
       return { success: true, message: 'Data pangkat dihapus' }
@@ -16,7 +17,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  if (event.method === 'PUT') {
+  if (method === 'PUT') {
     const body = await readMultipartFormData(event)
     const data: any = {}
     let file: any = null
@@ -54,4 +55,6 @@ export default defineEventHandler(async (event) => {
       return { success: false, message: e?.message || 'Gagal memperbarui data pangkat' }
     }
   }
+
+  return { success: false, message: `Method ${method} tidak didukung` }
 })

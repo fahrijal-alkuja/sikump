@@ -54,12 +54,12 @@ const handleSubmit = async () => {
     const method = editingId.value ? 'PUT' : 'POST'
 
     const res = await $fetch<any>(url, { method, body: formData })
-    if (res.success) {
+    if (res?.success) {
       showAlert(`Riwayat Pangkat berhasil ${editingId.value ? 'diperbarui' : 'ditambahkan'}`, 'success')
       resetForm()
       emit('refresh')
     } else {
-      showAlert(res.message || 'Gagal memproses data', 'error')
+      showAlert(res?.message || 'Gagal memproses data', 'error')
     }
   } catch (e: any) { 
     showAlert(e?.data?.message || e?.message || 'Gagal memproses data', 'error') 
@@ -75,11 +75,11 @@ const handleDelete = (id: number) => {
     async () => {
       try {
         const res = await $fetch<any>(`/api/kepegawaian/riwayat/pangkat/${id}`, { method: 'DELETE' })
-        if (res.success) {
+        if (res?.success) {
           showAlert('Data berhasil dihapus', 'info')
           emit('refresh')
         } else {
-          showAlert(res.message || 'Gagal menghapus data', 'error')
+          showAlert(res?.message || 'Gagal menghapus data', 'error')
         }
       } catch (e: any) { 
         showAlert(e?.data?.message || e?.message || 'Gagal menghapus data', 'error') 

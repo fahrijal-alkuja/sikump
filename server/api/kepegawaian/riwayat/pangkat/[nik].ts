@@ -1,4 +1,4 @@
-import { defineEventHandler, readMultipartFormData, createError } from 'h3'
+import { defineEventHandler, readMultipartFormData, getMethod } from 'h3'
 import { prisma } from '../../../../utils/prisma'
 import { getStoragePath } from '../../../../utils/storage'
 import fs from 'node:fs'
@@ -6,8 +6,9 @@ import path from 'node:path'
 
 export default defineEventHandler(async (event) => {
   const nik = event.context.params?.nik
+  const method = getMethod(event)
 
-  if (event.method === 'GET') {
+  if (method === 'GET') {
     try {
       const data = await prisma.tmst_pangkat.findMany({
         where: { nik: String(nik) },
@@ -19,7 +20,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  if (event.method === 'POST') {
+  if (method === 'POST') {
     const body = await readMultipartFormData(event)
     const data: any = {}
     let file: any = null
@@ -44,9 +45,9 @@ export default defineEventHandler(async (event) => {
       const res = await prisma.tmst_pangkat.create({
         data: {
           nik: String(nik),
-          pangkat: data.pangkat,
-          no_sk: data.no_sk,
-          tmt: data.tmt,
+          pangkat: data.pangkat || '',
+          no_sk: data.no_sk || '',
+          tmt: data.tmt || '',
           upload_sk: data.upload_sk || null,
           last_update: new Date()
         }
@@ -57,4 +58,6 @@ export default defineEventHandler(async (event) => {
       return { success: false, message: e?.message || 'Gagal menambah data pangkat' }
     }
   }
+
+  return { success: false, message: `Method ${method} tidak didukung` }
 })
