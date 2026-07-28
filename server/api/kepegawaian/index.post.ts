@@ -33,7 +33,12 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const { nik, nama, ikatan_kerja, nidn, nuptk, unit_id, jenis_kelamin, tempat_lahir, tanggal_lahir, telepon, pendidikan } = fields
+  const { nik, nama, type, ikatan_kerja, nidn, nuptk, unit_id, jenis_kelamin, tempat_lahir, tanggal_lahir, telepon, pendidikan } = fields
+
+  // Determine employee type: use explicit 'type' field if present, fallback to ikatan_kerja
+  // 'type' is sent by EmployeeModal as 'dosen' or 'tendik'
+  // ikatan_kerja values: DTY/DPK/DPK2 = dosen, 1/2/3 = tendik
+  const isDosen = type === 'dosen' || (!type && ['DTY', 'DPK', 'DPK2'].includes(ikatan_kerja || ''))
 
   if (!nik || !nama) {
     throw createError({ statusCode: 400, statusMessage: 'NIK dan Nama wajib diisi' })
@@ -47,7 +52,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    if (ikatan_kerja === '1') {
+    if (isDosen) {
       await prisma.$executeRaw`
         INSERT INTO tmst_dosen (nik, nama_dosen, nidn, nuptk, kode_program_studi, jenis_kelamin, tempat_lahir, tanggal_lahir, telepon, status_aktif, kode_jenjang_pendidikan, upload_ktp)
         VALUES (${nik}, ${nama}, ${nidn || ''}, ${nuptk || ''}, ${unit_id || ''}, ${jenis_kelamin || 'L'}, ${tempat_lahir || ''}, ${tanggal_lahir ? tanggal_lahir : null}, ${telepon || ''}, '1', ${pendidikan || null}, ${ktpFinalName})
